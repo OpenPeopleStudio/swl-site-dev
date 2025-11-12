@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { useEffect, useState } from "react";
+import { supabaseBrowser } from "@/lib/supabaseBrowser";
 import type { StaffIdentity } from "@/lib/getCurrentUser";
 import { updatePresenceState } from "@/apps/presence/lib/presence";
 
@@ -19,18 +19,17 @@ type ShiftStatusButtonProps = {
 };
 
 export default function ShiftStatusButton({ user }: ShiftStatusButtonProps) {
-  const supabase = useMemo(() => getSupabaseBrowserClient(), []);
   const [activeShift, setActiveShift] = useState<ShiftLog | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user || !supabase) {
+    if (!user) {
       return;
     }
     let cancelled = false;
     (async () => {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseBrowser
         .from("shift_log")
         .select("*")
         .eq("user_id", user.id)
@@ -51,17 +50,16 @@ export default function ShiftStatusButton({ user }: ShiftStatusButtonProps) {
     return () => {
       cancelled = true;
     };
-  }, [supabase, user]);
+  }, [user]);
 
-  if (!user || !supabase) {
+  if (!user) {
     return null;
   }
 
   const ensuredUser = user;
-  const client = supabase;
+  const client = supabaseBrowser;
 
   async function handleClockIn() {
-    if (!supabase) return;
     setLoading(true);
     setError(null);
     const clockIn = new Date().toISOString();
@@ -85,7 +83,6 @@ export default function ShiftStatusButton({ user }: ShiftStatusButtonProps) {
 
   async function handleClockOut() {
     if (!activeShift) return;
-    if (!supabase) return;
     setLoading(true);
     setError(null);
     const clockOut = new Date();
@@ -93,11 +90,11 @@ export default function ShiftStatusButton({ user }: ShiftStatusButtonProps) {
       (clockOut.getTime() - new Date(activeShift.clock_in).getTime()) /
       (1000 * 60 * 60);
 
-      const { error } = await client
-        .from("shift_log")
-        .update({
-          clock_out: clockOut.toISOString(),
-          duration_hours: Math.max(duration, 0),
+    const { error } = await client
+      .from("shift_log")
+      .update({
+        clock_out: clockOut.toISOString(),
+        duration_hours: Math.max(duration, 0),
         status: "inactive",
       })
       .eq("id", activeShift.id);

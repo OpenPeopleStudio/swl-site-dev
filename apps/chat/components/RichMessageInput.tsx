@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { useEffect, useRef, useState } from "react";
+import { supabaseBrowser } from "@/lib/supabaseBrowser";
 
 type RichMessageInputProps = {
   channelId?: string | null;
@@ -37,7 +37,6 @@ export function RichMessageInput({
   const [gifResults, setGifResults] = useState<GifResult[]>([]);
   const [isGifPickerOpen, setIsGifPickerOpen] = useState(false);
   const typingTimeout = useRef<NodeJS.Timeout | null>(null);
-  const supabase = useMemo(() => getSupabaseBrowserClient(), []);
   const bucketName =
     process.env.NEXT_PUBLIC_CHAT_BUCKET?.trim() || "chat_uploads";
   const channelReady = Boolean(channelId);
@@ -89,15 +88,17 @@ export function RichMessageInput({
     try {
       if (mediaFile) {
         const path = `${channelId}/${Date.now()}-${mediaFile.name}`;
-        const { error: uploadError } = await supabase.storage
+        const { error: uploadError } = await supabaseBrowser.storage
           .from(bucketName)
           .upload(path, mediaFile, { upsert: true });
         if (uploadError) throw uploadError;
-        const { data } = supabase.storage.from(bucketName).getPublicUrl(path);
+        const { data } = supabaseBrowser.storage
+          .from(bucketName)
+          .getPublicUrl(path);
         imageUrl = data.publicUrl;
       }
 
-      await supabase.from("messages").insert({
+      await supabaseBrowser.from("messages").insert({
         content,
         channel_id: channelId,
         user_id: userId,

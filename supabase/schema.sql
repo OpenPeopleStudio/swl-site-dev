@@ -51,3 +51,24 @@ alter table if exists public.messages
 alter table if exists public.messages
   add constraint messages_staff_user_id_fkey
   foreign key (user_id) references public.staff(id) on delete set null;
+
+alter table if exists public.private_events
+  add column if not exists proposal_text text,
+  add column if not exists proposal_pdf_url text,
+  add column if not exists contract_signed boolean default false,
+  add column if not exists photos jsonb default '[]',
+  add column if not exists reflection_prompt_sent boolean default false;
+
+alter table public.messages enable row level security;
+
+drop policy if exists "read all messages" on public.messages;
+create policy "read all messages"
+on public.messages
+for select
+using (true);
+
+drop policy if exists "insert own message" on public.messages;
+create policy "insert own message"
+on public.messages
+for insert
+with check (auth.uid() = user_id);

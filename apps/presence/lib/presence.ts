@@ -1,7 +1,7 @@
 "use client";
 
 import type { RealtimeChannel } from "@supabase/supabase-js";
-import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { supabaseBrowser } from "@/lib/supabaseBrowser";
 import type { StaffIdentity } from "@/lib/getCurrentUser";
 
 type PresenceState = "online" | "on-shift" | "away";
@@ -50,8 +50,7 @@ export function initPresence(
   user: StaffIdentity,
   initialState: PresenceState = "online",
 ) {
-  const supabase = getSupabaseBrowserClient();
-  if (!supabase || typeof window === "undefined") {
+  if (typeof window === "undefined") {
     return () => undefined;
   }
   teardownPresence();
@@ -59,24 +58,25 @@ export function initPresence(
   currentUser = user;
   currentState = initialState;
 
-  channel = supabase.channel("presence:swl", {
+  const presenceChannel = supabaseBrowser.channel("presence:swl", {
     config: { presence: { key: user.id } },
   });
+  channel = presenceChannel;
 
-  channel
+  presenceChannel
     .on("presence", { event: "sync" }, () => {
-      broadcastPresenceState(channel?.presenceState() ?? {});
+      broadcastPresenceState(presenceChannel.presenceState() ?? {});
     })
-    .subscribe(async (status) => {
+    .subscribe(async (status: string) => {
       if (status === "SUBSCRIBED") {
         const payload = buildPayload(currentState);
-        if (payload) await channel?.track(payload);
+        if (payload) await presenceChannel.track(payload);
       }
     });
 
   heartbeat = setInterval(() => {
     const payload = buildPayload(currentState);
-    if (payload) void channel?.track(payload);
+    if (payload) void presenceChannel.track(payload);
   }, 15000);
 
   return () => teardownPresence();

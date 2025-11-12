@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { supabaseBrowser } from "@/lib/supabaseBrowser";
 
 const LABELS: Record<string, string> = {
   checking: "Checking auth…",
@@ -19,7 +19,7 @@ export default function AuthDiagnostics() {
     let mounted = true;
 
     async function runDiagnostics() {
-      const { data, error } = await supabase.auth.getUser();
+      const { data, error } = await supabaseBrowser.auth.getUser();
       if (!mounted) return;
       if (error) {
         setState("error");
@@ -31,7 +31,7 @@ export default function AuthDiagnostics() {
         return;
       }
 
-      const test = await supabase.from("messages").select("id").limit(1);
+      const test = await supabaseBrowser.from("messages").select("id").limit(1);
       if (!mounted) return;
       if (test.error) {
         setState("rls");

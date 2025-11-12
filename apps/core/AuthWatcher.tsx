@@ -1,7 +1,8 @@
 "use client";
 
+import type { Session } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { supabaseBrowser } from "@/lib/supabaseBrowser";
 
 export function AuthWatcher() {
   const [sessionState, setSessionState] = useState<{
@@ -13,7 +14,7 @@ export function AuthWatcher() {
     let mounted = true;
 
     async function hydrate() {
-      const { data } = await supabase.auth.getSession();
+      const { data } = await supabaseBrowser.auth.getSession();
       if (!mounted) return;
       if (data.session) {
         setSessionState({
@@ -26,8 +27,8 @@ export function AuthWatcher() {
     }
 
     void hydrate();
-    const { data: subscription } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+    const { data: subscription } = supabaseBrowser.auth.onAuthStateChange(
+      (_event: unknown, session: Session | null) => {
         if (!mounted) return;
         if (session) {
           setSessionState({

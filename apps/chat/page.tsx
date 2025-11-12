@@ -1,10 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type {
+  RealtimePostgresDeletePayload,
+  RealtimePostgresInsertPayload,
+} from "@supabase/supabase-js";
 import { Card } from "@/shared/ui/Card";
 import { MessageList } from "./components/MessageList";
 import { RichMessageInput } from "./components/RichMessageInput";
-import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { supabaseBrowser } from "@/lib/supabaseBrowser";
 import { resolveChannelId } from "@/lib/getChannelId";
 import type { ChatMessageRecord, ReactionRecord } from "./types";
 import { MediaModal } from "./components/MediaModal";
@@ -53,7 +57,7 @@ export default function ChatPage() {
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const [replyTarget, setReplyTarget] = useState<ChatMessageRecord | null>(null);
   const [activeMedia, setActiveMedia] = useState<string | null>(null);
-  const supabase = useMemo(() => getSupabaseBrowserClient(), []);
+  const supabase = supabaseBrowser;
   const [channelUuid, setChannelUuid] = useState<string | null>(null);
   const [channelUuidIdentifier, setChannelUuidIdentifier] = useState<
     string | null
@@ -175,7 +179,7 @@ export default function ChatPage() {
       if (!error) {
         const normalized = (data ?? []).map(normalizeMessage);
         setMessages(normalized);
-        normalized.forEach((message) => {
+        normalized.forEach((message: ChatMessageRecord) => {
           if (!message.emotion_label && message.content) {
             void classifyMessageEmotion(message);
           }
@@ -196,7 +200,9 @@ export default function ChatPage() {
           table: "messages",
           filter: `channel_id=eq.${channelUuid}`,
         },
-        async (payload) => {
+        async (
+          payload: RealtimePostgresInsertPayload<SupabaseMessageRow>,
+        ) => {
           const insertedId = (payload.new as { id?: string })?.id;
           if (!insertedId) return;
 
@@ -229,8 +235,8 @@ export default function ChatPage() {
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "reactions" },
-        (payload) => {
-        const reaction = payload.new as ReactionRecord;
+        (payload: RealtimePostgresInsertPayload<ReactionRecord>) => {
+          const reaction = payload.new as ReactionRecord;
         setMessages((prev) =>
           prev.map((message) =>
             message.id === reaction.message_id
@@ -246,7 +252,7 @@ export default function ChatPage() {
       .on(
         "postgres_changes",
         { event: "DELETE", schema: "public", table: "reactions" },
-        (payload) => {
+        (payload: RealtimePostgresDeletePayload<ReactionRecord>) => {
           const reaction = payload.old as ReactionRecord;
           setMessages((prev) =>
             prev.map((message) =>
@@ -269,7 +275,7 @@ export default function ChatPage() {
       .on(
         "broadcast",
         { event: "typing" },
-        (payload) => {
+        (payload: { payload: { userId: string; name: string; typing: boolean } }) => {
           const { userId, name, typing } = payload.payload as {
             userId: string;
             name: string;

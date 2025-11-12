@@ -30,7 +30,7 @@ files.forEach((file) => {
       `🚫 Supabase server client import detected in ${path.relative(
         process.cwd(),
         file,
-      )}. Use "@/lib/supabaseClient" instead.`,
+      )}. Use "@/lib/supabaseBrowser" instead.`,
     );
   }
 });

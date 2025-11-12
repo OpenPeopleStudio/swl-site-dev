@@ -1,16 +1,13 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { supabaseBrowser } from "@/lib/supabaseBrowser";
 
 export function useAmbientGlow() {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    const supabase = getSupabaseBrowserClient();
-    if (!supabase) return;
-
-    const channel = supabase.channel("activity-glow");
+    const channel = supabaseBrowser.channel("activity-glow");
     channel.on(
       "postgres_changes",
       { event: "*", schema: "public", table: "messages" },
@@ -33,7 +30,7 @@ export function useAmbientGlow() {
 
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      supabase.removeChannel(channel);
+      supabaseBrowser.removeChannel(channel);
     };
   }, []);
 }

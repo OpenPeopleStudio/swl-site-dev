@@ -1,18 +1,16 @@
 "use client";
 
+import type { RealtimePostgresInsertPayload } from "@supabase/supabase-js";
 import { useEffect } from "react";
-import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { supabaseBrowser } from "@/lib/supabaseBrowser";
 
 export function useReactiveVisuals() {
   useEffect(() => {
-    const supabase = getSupabaseBrowserClient();
-    if (!supabase) return;
-
-    const channel = supabase.channel("activity-reflections");
+    const channel = supabaseBrowser.channel("activity-reflections");
     channel.on(
       "postgres_changes",
       { event: "INSERT", schema: "public", table: "reflections" },
-      (payload) => {
+      (payload: RealtimePostgresInsertPayload<{ highlight?: string | null }>) => {
         const highlight = (payload.new as { highlight?: string | null })
           ?.highlight;
         const intensity = Math.min(
@@ -29,7 +27,7 @@ export function useReactiveVisuals() {
     channel.subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      supabaseBrowser.removeChannel(channel);
     };
   }, []);
 }

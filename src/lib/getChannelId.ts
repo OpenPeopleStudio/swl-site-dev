@@ -1,4 +1,6 @@
-import { supabase } from "@/lib/supabaseClient";
+"use client";
+
+import { supabaseBrowser } from "@/lib/supabaseBrowser";
 
 const channelCache = new Map<string, string>();
 const inflightCache = new Map<string, Promise<string>>();
@@ -20,7 +22,7 @@ export async function getChannelId(name = "global-chat") {
 
   const request = (async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseBrowser
         .from("channels")
         .select("id")
         .eq("name", name)

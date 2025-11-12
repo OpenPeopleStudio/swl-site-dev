@@ -1,8 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import type { SupabaseClient } from "@supabase/supabase-js";
-import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { useCallback, useEffect, useState } from "react";
+import type {
+  SupabaseClient,
+  RealtimePostgresInsertPayload,
+} from "@supabase/supabase-js";
+import { supabaseBrowser } from "@/lib/supabaseBrowser";
 import {
   getCurrentUser,
   type StaffIdentity,
@@ -22,16 +25,14 @@ type UseChatOptions = {
 };
 
 export function useChat({ channelId = "global-chat" }: UseChatOptions = {}) {
-  const supabase = useMemo(() => getSupabaseBrowserClient(), []);
-  const ready = Boolean(supabase);
+  const supabase = supabaseBrowser;
+  const ready = true;
 
   const [user, setUser] = useState<StaffIdentity | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
-  const [error, setError] = useState<string | null>(
-    ready ? null : "Chat is unavailable (Supabase not configured).",
-  );
+  const [error, setError] = useState<string | null>(null);
   const [resolvedChannelId, setResolvedChannelId] = useState<string | null>(
     null,
   );
@@ -41,7 +42,6 @@ export function useChat({ channelId = "global-chat" }: UseChatOptions = {}) {
   const [channelError, setChannelError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!supabase) return undefined;
     const client = supabase;
     let active = true;
 
@@ -63,10 +63,6 @@ export function useChat({ channelId = "global-chat" }: UseChatOptions = {}) {
 
   useEffect(() => {
     let active = true;
-    if (!ready) {
-      return undefined;
-    }
-
     resolveChannelId(channelId)
       .then((id) => {
         if (!active) return;
@@ -94,11 +90,7 @@ export function useChat({ channelId = "global-chat" }: UseChatOptions = {}) {
   }, [channelId, ready]);
 
   useEffect(() => {
-    if (
-      !supabase ||
-      !resolvedChannelId ||
-      resolvedIdentifier !== channelId
-    ) {
+    if (!resolvedChannelId || resolvedIdentifier !== channelId) {
       return undefined;
     }
     const client = supabase;
@@ -125,7 +117,7 @@ export function useChat({ channelId = "global-chat" }: UseChatOptions = {}) {
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "messages" },
-        (payload) => {
+        (payload: RealtimePostgresInsertPayload<ChatMessage>) => {
           setMessages((prev) => [...prev, payload.new as ChatMessage]);
         },
       )
