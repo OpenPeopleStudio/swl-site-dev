@@ -1,54 +1,76 @@
 "use client";
 
-import type { ReactionRecord } from "../types";
+import { useMemo } from "react";
+import { motion } from "framer-motion";
+import type { ReactionRecord } from "@/apps/chat/types";
 
-const DEFAULT_EMOJIS = ["❤️", "👍", "😂", "😮"];
+const DEFAULT_REACTIONS = ["❤️", "🔥", "😂", "👀", "⚡️"];
 
 type ReactionBarProps = {
   messageId: string;
-  reactions: ReactionRecord[];
-  currentUserId: string;
-  onToggleReaction: (emoji: string, messageId: string) => void;
+  reactions?: ReactionRecord[];
+  currentUserId?: string;
+  onReact: (emoji: string) => void;
 };
 
 export function ReactionBar({
   messageId,
-  reactions,
+  reactions = [],
   currentUserId,
-  onToggleReaction,
+  onReact,
 }: ReactionBarProps) {
-  const grouped = reactions.reduce<Record<string, string[]>>((acc, reaction) => {
-    if (!acc[reaction.emoji]) acc[reaction.emoji] = [];
-    acc[reaction.emoji].push(reaction.user_id);
-    return acc;
-  }, {});
+  const grouped = useMemo(() => {
+    const map = new Map<
+      string,
+      {
+        count: number;
+        mine: boolean;
+      }
+    >();
+    reactions.forEach((reaction) => {
+      const entry = map.get(reaction.reaction_type) ?? {
+        count: 0,
+        mine: false,
+      };
+      entry.count += 1;
+      if (reaction.user_id === currentUserId) {
+        entry.mine = true;
+      }
+      map.set(reaction.reaction_type, entry);
+    });
+    return Array.from(map.entries());
+  }, [reactions, currentUserId]);
 
   return (
-    <div className="mt-1 flex flex-wrap gap-2">
-      {Object.entries(grouped).map(([emoji, userIds]) => {
-        const isMine = userIds.includes(currentUserId);
-        return (
-          <button
-            key={`${messageId}-${emoji}`}
-            onClick={() => onToggleReaction(emoji, messageId)}
-            className={`flex items-center gap-2 rounded-full px-3 py-1 text-xs shadow-inner backdrop-blur ${isMine ? "bg-white/30 text-black" : "bg-white/10 text-white/90"}`}
-          >
-            <span>{emoji}</span>
-            <span>{userIds.length}</span>
-          </button>
-        );
-      })}
-      <div className="flex gap-1">
-        {DEFAULT_EMOJIS.map((emoji) => (
-          <button
-            key={emoji}
-            onClick={() => onToggleReaction(emoji, messageId)}
-            className="rounded-full border border-white/10 px-2 py-1 text-xs text-white/70 transition hover:border-white/40"
-          >
-            {emoji}
-          </button>
-        ))}
-      </div>
+    <div className="flex flex-wrap items-center gap-1">
+      {grouped.map(([emoji, meta]) => (
+        <motion.button
+          key={`${messageId}-${emoji}`}
+          type="button"
+          onClick={() => onReact(emoji)}
+          whileTap={{ scale: 0.9 }}
+          className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs transition ${
+            meta.mine
+              ? "border-white/80 bg-white/20 text-white"
+              : "border-white/10 bg-white/5 text-white/70 hover:border-white/40"
+          }`}
+        >
+          <span>{emoji}</span>
+          <span>{meta.count}</span>
+        </motion.button>
+      ))}
+
+      {DEFAULT_REACTIONS.map((emoji) => (
+        <motion.button
+          key={`add-${messageId}-${emoji}`}
+          type="button"
+          onClick={() => onReact(emoji)}
+          whileTap={{ scale: 0.9 }}
+          className="rounded-full border border-white/10 px-2 py-1 text-xs text-white/60 transition hover:border-white/40 hover:text-white"
+        >
+          {emoji}
+        </motion.button>
+      ))}
     </div>
   );
 }
