@@ -1,85 +1,175 @@
 "use client";
 
-import { Suspense, useMemo } from "react";
-import { useSearchParams } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
-import { LoginPanel } from "@/components/LoginPanel";
-import { useIdleWarp } from "@/hooks/useIdleWarp";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { supabase } from "@/lib/supabaseClient";
+import toast from "react-hot-toast";
 
-export default function GatePage() {
-  return (
-    <Suspense
-      fallback={
-        <main className="flex min-h-screen items-center justify-center bg-black text-white">
-          <p className="text-white/60">Opening gate…</p>
-        </main>
+type Mode = "email" | "password";
+
+export function LoginPanel() {
+  const [mode, setMode] = useState<Mode>("email");
+  const [email, setEmail] = useState("");
+  const [userExists, setUserExists] = useState<boolean | null>(null);
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function handleCheckEmail(e?: React.FormEvent) {
+    if (e) e.preventDefault();
+    if (!email) {
+      toast.error("Please enter an email.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/check-user", {
+        method: "POST",
+        body: JSON.stringify({ email }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to check account.");
       }
+
+      const { exists } = await res.json();
+      setUserExists(exists);
+      setMode("password"); // move to password stage and STAY there
+    } catch (err: any) {
+      console.error("check-user error:", err);
+      toast.error(err?.message ?? "Unable to verify account.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email || !password) {
+      toast.error("Please enter email and password.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      if (userExists) {
+        // login
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (error) throw error;
+        toast.success("Welcome back.");
+      } else {
+        // sign up
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+        });
+        if (error) throw error;
+        toast.success("Check your email to confirm.");
+      }
+    } catch (err: any) {
+      console.error("auth error:", err);
+      toast.error(err?.message ?? "Authentication failed.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const title = userExists === null
+    ? "Welcome"
+    : userExists
+    ? "Welcome Back"
+    : "Welcome";
+
+  const buttonLabel =
+    mode === "email" ? "Next" : userExists ? "Enter" : "Create Account";
+
+  return (
+    <motion.div
+      initial={{ scale: 0.2, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ duration: 1.2, ease: [0.12, 0.9, 0.39, 1.0] }}
+      className="glass-panel w-[420px] max-w-[90vw] p-8 text-gray-100 space-y-6"
     >
-      <Gate />
-    </Suspense>
-  );
-}
+      {/* Title */}
+      <motion.h1
+        key={title}
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="text-3xl font-light tracking-[0.35em] text-center uppercase"
+      >
+        {title}
+      </motion.h1>
 
-function Gate() {
-  const searchParams = useSearchParams();
-  const nextPath = useMemo(() => searchParams.get("next") ?? undefined, [searchParams]);
-  const { awake, wakeSignal } = useIdleWarp(15000);
+      {/* Subtitle */}
+      <p className="text-xs text-center text-white/40">
+        Snow White Laundry · CortexOS
+      </p>
 
-  return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-black text-white">
-      <WarpBackdrop awake={awake} />
-      <AnimatePresence>
-        {awake && (
-          <motion.div
-            key="login-panel"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.6 }}
-            className="relative z-10 flex w-full items-center justify-center px-4 py-12"
-          >
-            <LoginPanel nextPath={nextPath} wakeSignal={wakeSignal} />
-          </motion.div>
-        )}
-      </AnimatePresence>
-      {!awake && (
-        <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 text-center text-white/60">
-          <p className="text-xs uppercase tracking-[0.5em]">Snow White Laundry</p>
-          <p className="text-sm text-white/50">Move the cursor or press any key to wake the gate.</p>
+      {/* Form */}
+      <form
+        onSubmit={mode === "email" ? handleCheckEmail : handleSubmit}
+        className="space-y-4"
+      >
+        {/* Email always visible */}
+        <div className="space-y-1">
+          <label className="text-xs uppercase tracking-[0.2em] text-white/40">
+            Email
+          </label>
+          <input
+            type="email"
+            required
+            autoFocus={mode === "email"}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full bg-transparent border-b border-white/10 focus:border-white/60 py-2 text-sm outline-none transition"
+            placeholder="you@example.com"
+          />
         </div>
-      )}
-    </main>
+
+        {/* Password only in password mode */}
+        <AnimatePresence>
+          {mode === "password" && (
+            <motion.div
+              key="password-field"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.5 }}
+              className="space-y-1"
+            >
+              <label className="text-xs uppercase tracking-[0.2em] text-white/40">
+                Password
+              </label>
+              <input
+                type="password"
+                required
+                autoFocus
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full bg-transparent border-b border-white/10 focus:border-white/60 py-2 text-sm outline-none transition"
+                placeholder={userExists ? "Enter your password" : "Create a password"}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Primary button */}
+        <motion.button
+          type="submit"
+          disabled={loading}
+          whileHover={{ scale: loading ? 1 : 1.02 }}
+          whileTap={{ scale: loading ? 1 : 0.98 }}
+          className="mt-4 w-full py-2 rounded-lg border border-white/15 text-sm text-white/80 hover:bg-white/5 hover:text-white transition disabled:opacity-50"
+        >
+          {loading ? "Working..." : buttonLabel}
+        </motion.button>
+      </form>
+    </motion.div>
   );
 }
 
-function WarpBackdrop({ awake }: { awake: boolean }) {
-  return (
-    <>
-      <motion.div
-        aria-hidden="true"
-        className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_30%_20%,rgba(45,104,255,0.25),transparent_55%)]"
-        animate={{
-          opacity: awake ? 0.8 : 0.4,
-          scale: awake ? 1.1 : 1,
-        }}
-        transition={{ duration: 1.2, ease: "easeOut" }}
-      />
-      <motion.div
-        aria-hidden="true"
-        className="absolute inset-0 -z-20 bg-[url('/stars.svg')] opacity-40"
-        animate={{
-          scale: awake ? 1.2 : 1,
-          filter: awake ? "blur(0px)" : "blur(2px)",
-          backgroundPositionY: awake ? "40%" : "0%",
-        }}
-        transition={{ duration: 1.2, ease: [0.12, 0.9, 0.39, 1] }}
-      />
-      <motion.div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-transparent via-transparent to-black"
-        animate={{ opacity: awake ? 0.3 : 0.6 }}
-        transition={{ duration: 1, ease: "easeInOut" }}
-      />
-    </>
-  );
-}
+export default LoginPanel;
