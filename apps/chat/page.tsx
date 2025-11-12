@@ -5,10 +5,11 @@ import { Card } from "@/shared/ui/Card";
 import { MessageList } from "./components/MessageList";
 import { RichMessageInput } from "./components/RichMessageInput";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { resolveChannelId } from "@/lib/getChannelId";
 import type { ChatMessageRecord, ReactionRecord } from "./types";
 import { MediaModal } from "./components/MediaModal";
 
-const FALLBACK_CHANNEL_ID = "00000000-0000-0000-0000-000000000000";
+const FALLBACK_CHANNEL_IDENTIFIER = "global-chat";
 const FALLBACK_USER_ID = "local-user";
 const FALLBACK_USER_NAME = "Staff";
 const FALLBACK_BOT_ID = "bot-user";
@@ -53,9 +54,16 @@ export default function ChatPage() {
   const [replyTarget, setReplyTarget] = useState<ChatMessageRecord | null>(null);
   const [activeMedia, setActiveMedia] = useState<string | null>(null);
   const supabase = useMemo(() => getSupabaseBrowserClient(), []);
+  const [channelUuid, setChannelUuid] = useState<string | null>(null);
+  const [channelUuidIdentifier, setChannelUuidIdentifier] = useState<
+    string | null
+  >(null);
+  const [channelResolveError, setChannelResolveError] = useState<
+    string | null
+  >(null);
 
-  const channelId =
-    process.env.NEXT_PUBLIC_CHAT_CHANNEL_ID ?? FALLBACK_CHANNEL_ID;
+  const channelIdentifier =
+    process.env.NEXT_PUBLIC_CHAT_CHANNEL_ID ?? FALLBACK_CHANNEL_IDENTIFIER;
   const currentUserId =
     process.env.NEXT_PUBLIC_CHAT_USER_ID ?? FALLBACK_USER_ID;
   const currentUserName =
@@ -68,6 +76,34 @@ export default function ChatPage() {
     null,
   );
   const pendingEmotionRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    let active = true;
+    setIsLoading(true);
+
+    resolveChannelId(channelIdentifier)
+      .then((id) => {
+        if (!active) return;
+        setChannelUuidIdentifier(channelIdentifier);
+        setChannelUuid(id);
+        setChannelResolveError(null);
+      })
+      .catch((err) => {
+        if (!active) return;
+        const message =
+          err instanceof Error
+            ? err.message
+            : "Unable to resolve chat channel.";
+        setChannelUuidIdentifier(channelIdentifier);
+        setChannelUuid(null);
+        setChannelResolveError(message);
+        setIsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [channelIdentifier]);
 
   const classifyMessageEmotion = useCallback(
     async (message: ChatMessageRecord) => {
@@ -104,6 +140,11 @@ export default function ChatPage() {
   );
 
   useEffect(() => {
+    if (
+      !channelUuid ||
+      channelUuidIdentifier !== channelIdentifier
+    )
+      return undefined;
     let isMounted = true;
 
     const normalizeMessage = (
@@ -127,7 +168,7 @@ export default function ChatPage() {
         .select(
           "id, content, image_url, gif_url, user_id, channel_id, created_at, staff:staff(full_name, avatar_url, role), reactions(id, emoji, user_id, message_id)",
         )
-        .eq("channel_id", channelId)
+        .eq("channel_id", channelUuid)
         .order("created_at", { ascending: true });
 
       if (!isMounted) return;
@@ -146,14 +187,14 @@ export default function ChatPage() {
     hydrate();
 
     const messageChannel = supabase
-      .channel("public:messages")
+      .channel(`public:messages:${channelUuid}`)
       .on(
         "postgres_changes",
         {
           event: "INSERT",
           schema: "public",
           table: "messages",
-          filter: `channel_id=eq.${channelId}`,
+          filter: `channel_id=eq.${channelUuid}`,
         },
         async (payload) => {
           const insertedId = (payload.new as { id?: string })?.id;
@@ -224,7 +265,7 @@ export default function ChatPage() {
       .subscribe();
 
     const typingChannel = supabase
-      .channel("chat-typing")
+      .channel(`chat-typing:${channelIdentifier}`)
       .on(
         "broadcast",
         { event: "typing" },
@@ -259,7 +300,13 @@ export default function ChatPage() {
         typingChannelRef.current = null;
       }
     };
-  }, [channelId, supabase, classifyMessageEmotion]);
+  }, [
+    channelUuid,
+    channelUuidIdentifier,
+    channelIdentifier,
+    supabase,
+    classifyMessageEmotion,
+  ]);
 
   function handleTypingSignal(isTyping: boolean) {
     typingChannelRef.current?.send({
@@ -290,7 +337,12 @@ export default function ChatPage() {
 
   async function handleRecapRequest() {
     const recent = messages.slice(-SUMMARY_BULLETS);
-    if (recent.length === 0) return;
+    if (
+      recent.length === 0 ||
+      !channelUuid ||
+      channelUuidIdentifier !== channelIdentifier
+    )
+      return;
     const payload = recent.map((message) => ({
       author: message.staff?.full_name ?? "Staff",
       content:
@@ -308,13 +360,16 @@ export default function ChatPage() {
       const data = (await response.json()) as { summary?: string };
       await supabase.from("messages").insert({
         content: data.summary ?? "Recap unavailable.",
-        channel_id: channelId,
+        channel_id: channelUuid,
         user_id: botUserId,
       });
     } catch (error) {
       console.error("Recap request failed", error);
     }
   }
+
+  const activeChannelError =
+    channelUuidIdentifier === channelIdentifier ? channelResolveError : null;
 
   return (
     <main className="min-h-screen bg-black px-4 py-8 text-white">
@@ -326,22 +381,33 @@ export default function ChatPage() {
             </p>
             <h1 className="text-2xl font-light">Mission Thread</h1>
             <p className="text-sm text-white/50">
-              Connected to Supabase Realtime · Channel {channelId.slice(0, 8)}
+              Connected to Supabase Realtime · Channel{" "}
+              {(channelUuid ?? channelIdentifier).slice(0, 8)}
             </p>
           </header>
 
           <div className="flex flex-1 flex-col px-6 py-4">
-            <MessageList
-              messages={messages}
-              currentUserId={currentUserId}
-              isLoading={isLoading}
-              typingUsers={typingUsers}
-              onToggleReaction={handleToggleReaction}
-              onReply={(message) => setReplyTarget(message)}
-              onMediaSelect={(url) => setActiveMedia(url)}
-            />
+            {activeChannelError ? (
+              <div className="mb-4 rounded-2xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                {activeChannelError}
+              </div>
+            ) : (
+              <MessageList
+                messages={messages}
+                currentUserId={currentUserId}
+                isLoading={isLoading}
+                typingUsers={typingUsers}
+                onToggleReaction={handleToggleReaction}
+                onReply={(message) => setReplyTarget(message)}
+                onMediaSelect={(url) => setActiveMedia(url)}
+              />
+            )}
             <RichMessageInput
-              channelId={channelId}
+              channelId={
+                channelUuidIdentifier === channelIdentifier
+                  ? channelUuid
+                  : null
+              }
               userId={currentUserId}
               onRecapRequest={handleRecapRequest}
               onTypingSignal={handleTypingSignal}

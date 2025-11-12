@@ -7,6 +7,7 @@ import {
   getCurrentUser,
   type StaffIdentity,
 } from "@/lib/getCurrentUser";
+import { resolveChannelId } from "@/lib/getChannelId";
 
 export type ChatMessage = {
   id: string;
@@ -26,11 +27,18 @@ export function useChat({ channelId = "global-chat" }: UseChatOptions = {}) {
 
   const [user, setUser] = useState<StaffIdentity | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [isLoading, setIsLoading] = useState(ready);
+  const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(
     ready ? null : "Chat is unavailable (Supabase not configured).",
   );
+  const [resolvedChannelId, setResolvedChannelId] = useState<string | null>(
+    null,
+  );
+  const [resolvedIdentifier, setResolvedIdentifier] = useState<string | null>(
+    null,
+  );
+  const [channelError, setChannelError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!supabase) return undefined;
@@ -54,7 +62,45 @@ export function useChat({ channelId = "global-chat" }: UseChatOptions = {}) {
   }, [supabase]);
 
   useEffect(() => {
-    if (!supabase) return undefined;
+    let active = true;
+    if (!ready) {
+      return undefined;
+    }
+
+    resolveChannelId(channelId)
+      .then((id) => {
+        if (!active) return;
+        setResolvedIdentifier(channelId);
+        setResolvedChannelId(id);
+        setChannelError(null);
+        setError(null);
+      })
+      .catch((err) => {
+        if (!active) return;
+        const message =
+          err instanceof Error
+            ? err.message
+            : "Unable to resolve chat channel.";
+        setResolvedIdentifier(channelId);
+        setResolvedChannelId(null);
+        setChannelError(message);
+        setError(message);
+        setIsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [channelId, ready]);
+
+  useEffect(() => {
+    if (
+      !supabase ||
+      !resolvedChannelId ||
+      resolvedIdentifier !== channelId
+    ) {
+      return undefined;
+    }
     const client = supabase;
     let active = true;
     async function fetchMessages() {
@@ -62,7 +108,7 @@ export function useChat({ channelId = "global-chat" }: UseChatOptions = {}) {
       const { data, error: supabaseError } = await client
         .from("messages")
         .select("*")
-        .eq("channel_id", channelId)
+        .eq("channel_id", resolvedChannelId)
         .order("created_at", { ascending: true });
       if (!active) return;
       if (supabaseError) {
@@ -75,7 +121,7 @@ export function useChat({ channelId = "global-chat" }: UseChatOptions = {}) {
     }
     void fetchMessages();
     const channel = client
-      .channel(`chat:${channelId}`)
+      .channel(`chat:${resolvedChannelId}`)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "messages" },
@@ -89,7 +135,7 @@ export function useChat({ channelId = "global-chat" }: UseChatOptions = {}) {
       active = false;
       client.removeChannel(channel);
     };
-  }, [channelId, supabase]);
+  }, [resolvedChannelId, resolvedIdentifier, channelId, supabase]);
 
   const sendMessage = useCallback(
     async (text: string) => {
@@ -98,19 +144,26 @@ export function useChat({ channelId = "global-chat" }: UseChatOptions = {}) {
         throw new Error("Chat is unavailable (Supabase not configured).");
       if (!user) throw new Error("Authentication required.");
       if (!text.trim()) return;
+      if (!resolvedChannelId || resolvedIdentifier !== channelId)
+        throw new Error("Chat channel unavailable. Please wait.");
       setIsSending(true);
       const { error: supabaseError } = await client.from("messages").insert({
         content: text.trim(),
         user_id: user.id,
-        channel_id: channelId,
+        channel_id: resolvedChannelId,
       });
       setIsSending(false);
       if (supabaseError) {
         throw new Error(supabaseError.message);
       }
     },
-    [channelId, supabase, user],
+    [resolvedChannelId, resolvedIdentifier, channelId, supabase, user],
   );
+
+  const activeChannelId =
+    resolvedIdentifier === channelId ? resolvedChannelId : null;
+  const activeChannelError =
+    resolvedIdentifier === channelId ? channelError : null;
 
   return {
     supabaseClient: supabase as SupabaseClient | null,
@@ -120,7 +173,9 @@ export function useChat({ channelId = "global-chat" }: UseChatOptions = {}) {
     error,
     sendMessage,
     isSending,
-    channelId,
+    channelId: activeChannelId,
     ready,
+    channelReady: Boolean(activeChannelId),
+    channelError: activeChannelError,
   };
 }

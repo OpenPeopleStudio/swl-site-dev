@@ -18,10 +18,19 @@ export default function ChatBox({
   channelId = "global-chat",
   open = true,
 }: ChatBoxProps) {
-  const { messages, user, isLoading, sendMessage, isSending, error, ready } =
-    useChat({
-      channelId,
-    });
+  const {
+    messages,
+    user,
+    isLoading,
+    sendMessage,
+    isSending,
+    error,
+    ready,
+    channelReady,
+    channelError,
+  } = useChat({
+    channelId,
+  });
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const lastMessageId = useRef<string | null>(null);
 
@@ -76,9 +85,11 @@ export default function ChatBox({
           <div className="text-sm text-white/60">
             Chat temporarily unavailable. Please try again later.
           </div>
+        ) : channelError ? (
+          <div className="text-sm text-red-400">{channelError}</div>
         ) : error ? (
           <div className="text-sm text-red-400">{error}</div>
-        ) : isLoading ? (
+        ) : isLoading || !channelReady ? (
           <div className="space-y-2 text-sm text-white/60">
             <div className="h-3 w-20 animate-pulse rounded-full bg-white/10" />
             <div className="h-3 w-32 animate-pulse rounded-full bg-white/10" />
@@ -106,7 +117,17 @@ export default function ChatBox({
       </div>
 
       {user ? (
-        <ChatInput onSend={handleSend} disabled={isSending} />
+        channelError ? (
+          <div className="border-t border-white/10 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+            {channelError}
+          </div>
+        ) : channelReady ? (
+          <ChatInput onSend={handleSend} disabled={isSending} />
+        ) : (
+          <div className="border-t border-white/10 bg-neutral-900/70 px-4 py-3 text-sm text-white/70">
+            Resolving chat channel…
+          </div>
+        )
       ) : (
         <div className="border-t border-white/10 bg-neutral-900/70 px-4 py-3 text-sm text-white/70">
           <p>

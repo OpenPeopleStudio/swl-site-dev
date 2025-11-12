@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
 type RichMessageInputProps = {
-  channelId: string;
+  channelId?: string | null;
   userId: string;
   onRecapRequest: () => Promise<void>;
   onTypingSignal: (isTyping: boolean) => void;
@@ -40,6 +40,7 @@ export function RichMessageInput({
   const supabase = useMemo(() => getSupabaseBrowserClient(), []);
   const bucketName =
     process.env.NEXT_PUBLIC_CHAT_BUCKET?.trim() || "chat_uploads";
+  const channelReady = Boolean(channelId);
 
   useEffect(() => {
     return () => {
@@ -55,6 +56,7 @@ export function RichMessageInput({
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!channelReady) return;
     if (!text.trim() && !mediaFile) return;
 
     if (text.trim().startsWith("/recap")) {
@@ -75,6 +77,10 @@ export function RichMessageInput({
 
   async function sendMessage(extra?: { gifUrl?: string }) {
     if (isSending) return;
+    if (!channelId) {
+      console.warn("Channel not resolved yet; message discarded.");
+      return;
+    }
     setIsSending(true);
 
     let imageUrl: string | undefined;
@@ -147,6 +153,7 @@ export function RichMessageInput({
   }
 
   async function handleGifSelect(result: GifResult) {
+    if (!channelReady) return;
     await sendMessage({ gifUrl: result.url });
   }
 
@@ -217,36 +224,49 @@ export function RichMessageInput({
           id="chat_media_upload"
           className="hidden"
           onChange={handleFileChange}
+          disabled={!channelReady}
         />
         <button
           type="button"
-          onClick={() => document.getElementById("chat_media_upload")?.click()}
-          className="rounded-full border border-white/10 p-2 text-sm text-white/70 hover:border-white/40"
+          onClick={() => {
+            if (!channelReady) return;
+            document.getElementById("chat_media_upload")?.click();
+          }}
+          className="rounded-full border border-white/10 p-2 text-sm text-white/70 hover:border-white/40 disabled:opacity-40"
+          disabled={!channelReady}
         >
           +
         </button>
         <button
           type="button"
-          onClick={() => setIsGifPickerOpen((prev) => !prev)}
-          className="rounded-full border border-white/10 p-2 text-sm text-white/70 hover:border-white/40"
+          onClick={() => {
+            if (!channelReady) return;
+            setIsGifPickerOpen((prev) => !prev);
+          }}
+          className="rounded-full border border-white/10 p-2 text-sm text-white/70 hover:border-white/40 disabled:opacity-40"
+          disabled={!channelReady}
         >
           GIF
         </button>
         <input
           type="text"
           value={text}
-          placeholder="Send a message…"
+          placeholder={
+            channelReady ? "Send a message…" : "Connecting to channel…"
+          }
           onChange={(event) => {
             setText(event.target.value);
             emitTypingSignal();
           }}
           onBlur={() => onTypingSignal(false)}
           className="flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/50"
-          disabled={isSending}
+          disabled={isSending || !channelReady}
         />
         <button
           type="submit"
-          disabled={isSending || (!text.trim() && !mediaFile)}
+          disabled={
+            !channelReady || isSending || (!text.trim() && !mediaFile)
+          }
           className="rounded-full bg-[#007aff] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#1a7fff] disabled:cursor-not-allowed disabled:bg-[#1b2b44]"
         >
           Send
