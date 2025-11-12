@@ -65,11 +65,11 @@ export default async function CustomerEventsPage() {
         <p className="text-xs uppercase tracking-[0.4em] text-white/40">
           Snow White Laundry
         </p>
-        <h1 className="text-3xl font-light">Your Private Rituals</h1>
+        <h1 className="text-3xl font-light">Your Event Plans</h1>
         <p className="text-sm text-white/60">
           {events.length > 0
-            ? "Track proposals, deposits, and night-of details in one place."
-            : "Request received. As soon as we schedule a date, you’ll see it here."}
+            ? "Track proposals, menus, deposits, and service notes in one place."
+            : "Request received. As soon as we confirm a date, you’ll see it here."}
         </p>
       </header>
 
@@ -176,6 +176,16 @@ export default async function CustomerEventsPage() {
         </form>
       </section>
 
+      <section className="rounded-3xl border border-white/10 bg-white/5 p-6 text-white shadow-[0_30px_90px_rgba(0,0,0,0.55)]">
+        <h2 className="text-2xl font-light">Reserve Opening Week</h2>
+        <p className="mt-2 text-sm text-white/70">
+          We’ll email you first when the dining room opens to the public. Tell
+          us your preferred evening and party size and we’ll confirm a table as
+          soon as reservations go live.
+        </p>
+        <EarlyReservationForm email={session.email} />
+      </section>
+
       <section className="space-y-4">
         {events.map((event) => (
           <article
@@ -264,12 +274,73 @@ export default async function CustomerEventsPage() {
               No events are linked to <strong>{session.email}</strong> yet.
             </p>
             <p className="mt-2 text-sm">
-              Submit the form above or reach out to cortex@snowwhitelaundry.co
-              and we’ll connect your profile.
+              Submit the form above or reach out to tom@snowwhitelaundry.co and
+              we’ll connect your profile.
             </p>
           </div>
         )}
       </section>
     </div>
+  );
+}
+
+async function createEarlyReservation(formData: FormData, email: string) {
+  "use server";
+  const supabase = getSupabaseAdmin();
+  const payload = {
+    email,
+    preferred_date: formData.get("opening_date")?.toString() ?? null,
+    party_size: Number(formData.get("opening_party")) || null,
+    notes: formData.get("opening_notes")?.toString() ?? null,
+  };
+  const { error } = await supabase.from("opening_reservations").insert(payload);
+  if (error) throw error;
+}
+
+function EarlyReservationForm({ email }: { email: string }) {
+  return (
+    <form
+      action={async (formData) => {
+        "use server";
+        await createEarlyReservation(formData, email);
+        revalidatePath("/customer/events");
+      }}
+      className="mt-6 grid gap-4 md:grid-cols-2"
+    >
+      <label className="text-sm text-white/70">
+        Preferred Date
+        <input
+          type="date"
+          name="opening_date"
+          className="mt-2 w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none focus:border-[#2A63FF]"
+        />
+      </label>
+      <label className="text-sm text-white/70">
+        Party Size
+        <input
+          type="number"
+          min={2}
+          name="opening_party"
+          className="mt-2 w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none focus:border-[#2A63FF]"
+        />
+      </label>
+      <label className="text-sm text-white/70 md:col-span-2">
+        Notes
+        <textarea
+          name="opening_notes"
+          rows={3}
+          placeholder="Any dietary notes or timing preferences?"
+          className="mt-2 w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none focus:border-[#2A63FF]"
+        />
+      </label>
+      <div className="md:col-span-2">
+        <button
+          type="submit"
+          className="w-full rounded-2xl border border-white/20 px-4 py-3 text-sm uppercase tracking-[0.3em] text-white transition hover:border-white/60"
+        >
+          Request Early Seating
+        </button>
+      </div>
+    </form>
   );
 }
