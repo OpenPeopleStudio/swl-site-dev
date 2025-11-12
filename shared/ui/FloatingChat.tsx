@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { MessageCircle } from "lucide-react";
 import ChatBox from "@/apps/chat/components/ChatBox";
+import PresenceSidebar from "@/shared/ui/PresenceSidebar";
+import { useMessageAlert } from "@/apps/chat/hooks/useMessageAlert";
 
 type Toast = {
   id: number;
@@ -14,6 +16,8 @@ export default function FloatingChat() {
   const [open, setOpen] = useState(false);
   const [unread, setUnread] = useState(false);
   const [toast, setToast] = useState<Toast | null>(null);
+  const [newCount, setNewCount] = useState(0);
+  useMessageAlert(newCount);
 
   useEffect(() => {
     if (!toast) return;
@@ -24,6 +28,7 @@ export default function FloatingChat() {
   function handleNewMessage(message?: { content?: string | null }) {
     if (open) return;
     setUnread(true);
+    setNewCount((count) => count + 1);
     setToast({
       id: Date.now(),
       text: message?.content
@@ -39,7 +44,9 @@ export default function FloatingChat() {
         onClick={() => {
           setOpen(true);
           setUnread(false);
+          setNewCount(0);
         }}
+        id="chat-bubble"
         className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[#007aff] text-white shadow-2xl transition hover:bg-[#379eff] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 md:bottom-8 md:right-8"
       >
         <MessageCircle className="h-6 w-6" />
@@ -64,9 +71,14 @@ export default function FloatingChat() {
               exit={{ x: 400, opacity: 0 }}
               transition={{ type: "spring", stiffness: 260, damping: 25 }}
               onClick={(event) => event.stopPropagation()}
-              className="flex h-[85vh] w-full flex-col rounded-t-3xl border-t border-white/10 bg-neutral-950/90 text-white shadow-[0_40px_120px_rgba(0,0,0,0.8)] md:h-full md:w-[380px] md:rounded-none md:border-l"
+              className="glass-morphic flex h-[85vh] w-full flex-col rounded-t-3xl border-t border-white/10 text-white shadow-[0_40px_120px_rgba(0,0,0,0.8)] md:h-full md:w-[520px] md:rounded-none md:border-l"
             >
-              <ChatBox open={open} onNewMessage={handleNewMessage} />
+              <div className="flex h-full flex-1 flex-col md:flex-row">
+                <div className="flex h-full flex-1 flex-col">
+                  <ChatBox open={open} onNewMessage={handleNewMessage} />
+                </div>
+                <PresenceSidebar />
+              </div>
             </motion.div>
           </motion.div>
         )}

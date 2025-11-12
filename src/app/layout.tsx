@@ -3,6 +3,7 @@ import { Inter, Space_Grotesk } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import FloatingChat from "@/shared/ui/FloatingChat";
+import AmbientScene from "@/shared/ui/AmbientScene";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -44,6 +45,7 @@ export default function RootLayout({
         className="font-body antialiased bg-space-gradient text-white"
         data-site-mode={process.env.NEXT_PUBLIC_SITE_MODE ?? "staff"}
       >
+        <AmbientScene />
         {children}
         <FloatingChat />
       </body>
