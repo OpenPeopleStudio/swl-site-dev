@@ -2,6 +2,7 @@
 
 import { Suspense, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { supabaseBrowser } from "@/lib/supabaseBrowser";
 
 type GateMode = "unknown" | "existing" | "new";
 
@@ -119,9 +120,9 @@ function Gate() {
       if (!res.ok) {
         throw new Error(data.error ?? "Access denied");
       }
+      await ensureSupabaseSession(email.trim());
       const destination =
-        nextPath ||
-        (data.role === "customer" ? "/customer" : "/staff");
+        nextPath || (data.role === "customer" ? "/customer" : "/staff");
       window.location.href = destination;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Access denied");
@@ -209,4 +210,27 @@ function Gate() {
       </div>
     </main>
   );
+}
+
+async function ensureSupabaseSession(email: string) {
+  try {
+    const res = await fetch("/api/supabase/session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+    if (!res.ok) return;
+    const tokens = (await res.json()) as {
+      access_token: string;
+      refresh_token: string;
+    };
+    if (tokens.access_token && tokens.refresh_token) {
+      await supabaseBrowser.auth.setSession({
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token,
+      });
+    }
+  } catch (error) {
+    console.warn("Unable to sync Supabase session", error);
+  }
 }
