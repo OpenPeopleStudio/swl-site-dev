@@ -24,6 +24,11 @@ const modules = [
     description: "Capture daily system feedback so tomorrow launches on time.",
     href: "/staff/reflection",
   },
+  {
+    title: "Events",
+    description: "Draft proposals, send contracts, and browse archived rituals.",
+    href: "/events/archive",
+  },
 ];
 
 export function StaffDashboardPanels() {
