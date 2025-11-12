@@ -2,29 +2,103 @@
 
 import { useState } from "react";
 
+type GateMode = "unknown" | "existing" | "new";
+
 export default function Gate() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [mode, setMode] = useState<GateMode>("unknown");
+  const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  function resetState(nextEmail: string) {
+    setEmail(nextEmail);
+    setMode("unknown");
+    setMessage(null);
+    setPassword("");
+    setConfirmPassword("");
+    setError("");
+  }
+
+  async function lookupEmail() {
+    setIsLoading(true);
+    setError("");
+    setMessage(null);
+    try {
+      const res = await fetch(
+        `/api/gate?email=${encodeURIComponent(email.trim())}`,
+      );
+      if (!res.ok) {
+        throw new Error("Unable to check access");
+      }
+      const data = (await res.json()) as { exists: boolean; role?: string };
+      if (data.exists) {
+        setMode("existing");
+        setMessage(
+          data.role === "staff"
+            ? "Crew recognized • enter your passphrase."
+            : "Welcome back — enter your password.",
+        );
+      } else {
+        setMode("new");
+        setMessage(
+          "New guest. Create a password to open the Cortex reflections portal.",
+        );
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Lookup failed");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setError("");
+    if (!email.trim()) {
+      setError("Email is required");
+      return;
+    }
+
+    if (mode === "unknown") {
+      await lookupEmail();
+      return;
+    }
+
+    if (mode === "existing" && !password) {
+      setError("Enter your password");
+      return;
+    }
+
+    if (mode === "new") {
+      if (!password || !confirmPassword) {
+        setError("Create and confirm your password");
+        return;
+      }
+      if (password !== confirmPassword) {
+        setError("Passwords do not match");
+        return;
+      }
+    }
+
     setIsLoading(true);
+    setError("");
 
     try {
       const res = await fetch("/api/gate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({
+          email: email.trim(),
+          password,
+          intent: mode === "new" ? "register" : "login",
+        }),
       });
       const data = await res.json();
-
       if (!res.ok) {
         throw new Error(data.error ?? "Access denied");
       }
-
       window.location.href = "/staff";
     } catch (err) {
       setError(err instanceof Error ? err.message : "Access denied");
@@ -32,6 +106,13 @@ export default function Gate() {
       setIsLoading(false);
     }
   }
+
+  const buttonLabel =
+    mode === "unknown"
+      ? "Continue"
+      : mode === "new"
+        ? "Create Access"
+        : "Enter";
 
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-black text-white">
@@ -56,22 +137,39 @@ export default function Gate() {
             <input
               type="email"
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              onChange={(event) => resetState(event.target.value)}
               required
               className="mt-2 w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none focus:border-[#2A63FF]"
             />
           </label>
 
-          <label className="block text-sm text-white/70">
-            Password
-            <input
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              required
-              className="mt-2 w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none focus:border-[#2A63FF]"
-            />
-          </label>
+          {mode !== "unknown" && (
+            <label className="block text-sm text-white/70">
+              {mode === "new" ? "Create Password" : "Password"}
+              <input
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                className="mt-2 w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none focus:border-[#2A63FF]"
+              />
+            </label>
+          )}
+
+          {mode === "new" && (
+            <label className="block text-sm text-white/70">
+              Confirm Password
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(event) => setConfirmPassword(event.target.value)}
+                className="mt-2 w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none focus:border-[#2A63FF]"
+              />
+            </label>
+          )}
+
+          {message && (
+            <p className="text-center text-sm text-white/60">{message}</p>
+          )}
 
           {error && (
             <p className="text-center text-sm text-[#FF5E7A]">{error}</p>
@@ -82,7 +180,7 @@ export default function Gate() {
             disabled={isLoading}
             className="w-full rounded-2xl bg-[#2A63FF] py-3 text-sm uppercase tracking-[0.3em] text-white transition hover:bg-[#244eda] disabled:opacity-70"
           >
-            {isLoading ? "Verifying…" : "Enter"}
+            {isLoading ? "Verifying…" : buttonLabel}
           </button>
         </form>
       </div>
