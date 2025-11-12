@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useChat } from "../hooks/useChat";
 import ChatInput from "./ChatInput";
 import UserBadge from "@/shared/ui/UserBadge";
 import ShiftStatusButton from "./ShiftStatusButton";
 import { initPresence, teardownPresence } from "@/apps/presence/lib/presence";
+import { supabaseBrowser } from "@/lib/supabaseBrowser";
 
 type ChatBoxProps = {
   onNewMessage?: (message: { content?: string | null; user_id: string }) => void;
@@ -31,8 +32,71 @@ export default function ChatBox({
   } = useChat({
     channelId,
   });
+  const [sessionInfo, setSessionInfo] = useState("Checking Supabase auth…");
+  const [inspectedUser, setInspectedUser] = useState<Record<string, unknown> | null>(null);
+  const [authEvents, setAuthEvents] = useState<string[]>([]);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const lastMessageId = useRef<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    async function inspectAuth() {
+      if (typeof document !== "undefined") {
+        console.groupCollapsed("[Chat] Cookie snapshot");
+        console.log(document.cookie);
+        console.groupEnd();
+      }
+      const { data, error } = await supabaseBrowser.auth.getUser();
+      console.groupCollapsed("[Chat] Supabase auth.getUser()");
+      console.log("data:", data);
+      console.log("error:", error);
+      console.groupEnd();
+      if (!mounted) return;
+      if (data?.user) {
+        setSessionInfo(`✅ Supabase session for ${data.user.email}`);
+        setInspectedUser(
+          JSON.parse(JSON.stringify(data.user)) as Record<string, unknown>,
+        );
+      } else if (error) {
+        setSessionInfo(`❌ Supabase error: ${error.message}`);
+        setInspectedUser(null);
+      } else {
+        setSessionInfo("⚠️ No Supabase session detected");
+        setInspectedUser(null);
+      }
+    }
+
+    inspectAuth();
+    const { data: listener } = supabaseBrowser.auth.onAuthStateChange(
+      (event, session) => {
+        const timestamp = new Date().toISOString();
+        setAuthEvents((prev) =>
+          [...prev, `${timestamp} · ${event}`].slice(-8),
+        );
+        console.groupCollapsed("[Chat] Auth event");
+        console.log(event, session);
+        console.groupEnd();
+        setSessionInfo(
+          session?.user
+            ? `✅ Supabase session for ${session.user.email}`
+            : `⚠️ Auth event ${event} without session`,
+        );
+        setInspectedUser(
+          session?.user
+            ? (JSON.parse(JSON.stringify(session.user)) as Record<
+                string,
+                unknown
+              >)
+            : null,
+        );
+      },
+    );
+
+    return () => {
+      mounted = false;
+      listener.subscription.unsubscribe();
+    };
+  }, []);
 
   useEffect(() => {
     if (!user) {
@@ -69,6 +133,31 @@ export default function ChatBox({
         <p className="text-xs uppercase tracking-[0.4em] text-white/40">
           Cortex Chat
         </p>
+        <div className="mt-2 space-y-2 rounded-2xl border border-white/10 bg-black/40 p-3 text-xs text-white/70">
+          <p>{sessionInfo}</p>
+          {inspectedUser && (
+            <details className="text-[11px]">
+              <summary className="cursor-pointer text-white/60">
+                Supabase user payload
+              </summary>
+              <pre className="mt-2 max-h-40 overflow-auto rounded bg-black/60 p-2 text-[10px]">
+                {JSON.stringify(inspectedUser, null, 2)}
+              </pre>
+            </details>
+          )}
+          {authEvents.length > 0 && (
+            <details className="text-[11px]">
+              <summary className="cursor-pointer text-white/60">
+                Recent auth events
+              </summary>
+              <ul className="mt-2 space-y-1">
+                {authEvents.map((entry) => (
+                  <li key={entry}>{entry}</li>
+                ))}
+              </ul>
+            </details>
+          )}
+        </div>
         <div className="mt-2 flex flex-col gap-2">
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-lg font-light text-white">

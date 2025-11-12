@@ -1,5 +1,5 @@
 import { cache } from "react";
-import { getSupabaseAdmin } from "@/lib/supabase";
+import { createClient } from "@supabase/supabase-js";
 
 export type PrivateEvent = {
   id: string;
@@ -30,18 +30,34 @@ export type PrivateEvent = {
 const baseColumns =
   "id, guest_name, guest_email, organization, event_type, party_size, preferred_date, start_time, end_time, menu_style, budget_range, special_requests, status, proposal_text, proposal_pdf_url, deposit_amount, deposit_paid, photos, reflection_prompt_sent, notes_internal, created_at, updated_at";
 
-function getAdminClient() {
-  try {
-    return getSupabaseAdmin();
-  } catch (error) {
-    console.error("Supabase admin client unavailable", error);
-    return null;
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+const supabaseAdmin = SUPABASE_URL && SUPABASE_SERVICE_KEY
+  ? createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
+      global: {
+        headers: {
+          "X-Client-Info": "cortexos-events-admin",
+        },
+      },
+    })
+  : null;
+
+function requireSupabaseAdmin() {
+  if (!SUPABASE_URL) {
+    throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL");
   }
+  if (!SUPABASE_SERVICE_KEY) {
+    throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY");
+  }
+  if (!supabaseAdmin) {
+    throw new Error("Supabase admin client not initialized");
+  }
+  return supabaseAdmin;
 }
 
 export const getEventById = cache(async (id: string) => {
-  const supabase = getAdminClient();
-  if (!supabase) return null;
+  const supabase = requireSupabaseAdmin();
   const { data, error } = await supabase
     .from("private_events")
     .select(baseColumns)
@@ -55,8 +71,7 @@ export const getEventById = cache(async (id: string) => {
 });
 
 export async function listCompletedEvents() {
-  const supabase = getAdminClient();
-  if (!supabase) return [];
+  const supabase = requireSupabaseAdmin();
   const { data, error } = await supabase
     .from("private_events")
     .select(baseColumns)
@@ -70,8 +85,7 @@ export async function listCompletedEvents() {
 }
 
 export async function listEventsForGuest(email: string) {
-  const supabase = getAdminClient();
-  if (!supabase) return [];
+  const supabase = requireSupabaseAdmin();
   const { data, error } = await supabase
     .from("private_events")
     .select(baseColumns)

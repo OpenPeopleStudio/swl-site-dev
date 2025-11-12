@@ -125,7 +125,7 @@ export function CustomerEventWizard({ action, defaultName }: WizardProps) {
               />
             </label>
             <label className="text-sm text-white/70">
-              Arrival
+              Start
               <input
                 type="time"
                 value={state.start_time}
@@ -134,7 +134,7 @@ export function CustomerEventWizard({ action, defaultName }: WizardProps) {
               />
             </label>
             <label className="text-sm text-white/70">
-              Departure
+              End
               <input
                 type="time"
                 value={state.end_time}

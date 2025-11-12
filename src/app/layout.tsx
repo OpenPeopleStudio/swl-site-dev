@@ -5,6 +5,7 @@ import "./globals.css";
 import { ConditionalFloatingChat } from "@/shared/ui/ConditionalFloatingChat";
 import AmbientScene from "@/shared/ui/AmbientScene";
 import { AuthWatcher } from "@/apps/core/AuthWatcher";
+import { AuthStatusBanner } from "@/shared/ui/AuthStatusBanner";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -37,6 +38,9 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const showAuthBanner =
+    process.env.NEXT_PUBLIC_AUTH_DEBUG === "true" ||
+    process.env.NODE_ENV === "development";
   return (
     <html
       lang="en"
@@ -48,6 +52,7 @@ export default function RootLayout({
       >
         <AmbientScene />
         <AuthWatcher />
+        {showAuthBanner && <AuthStatusBanner />}
         {children}
         <ConditionalFloatingChat />
       </body>

@@ -4,8 +4,39 @@ import { listCompletedEvents } from "@/apps/events/lib/queries";
 export const dynamic = "force-dynamic";
 
 export default async function EventArchivePage() {
-  const events = await listCompletedEvents();
+  let events: Awaited<ReturnType<typeof listCompletedEvents>> = [];
+  let errorMessage: string | null = null;
+  try {
+    events = await listCompletedEvents();
+  } catch (error) {
+    console.error("Event archive failed:", error);
+    errorMessage = (error as Error).message;
+  }
 
+  if (errorMessage) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-black px-6 py-10 text-white">
+        <p className="text-sm text-red-400">
+          Error loading archive: {errorMessage}
+        </p>
+      </main>
+    );
+  }
+
+  if (!events.length) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-black px-6 py-10 text-white">
+        <p className="text-sm text-white/60">
+          No completed events found. Check back after the next service.
+        </p>
+      </main>
+    );
+  }
+
+  return <ArchiveShell events={events} />;
+}
+
+function ArchiveShell({ events }: { events: Awaited<ReturnType<typeof listCompletedEvents>> }) {
   return (
     <main className="min-h-screen bg-black px-6 py-10 text-white">
       <div className="mx-auto max-w-6xl">
@@ -61,12 +92,6 @@ export default async function EventArchivePage() {
               </div>
             </article>
           ))}
-          {events.length === 0 && (
-            <p className="col-span-full text-center text-sm text-white/60">
-              No archived events yet. The vault opens after your first private
-              dinner.
-            </p>
-          )}
         </div>
       </div>
     </main>

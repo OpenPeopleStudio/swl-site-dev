@@ -233,6 +233,8 @@ function EarlyReservationForm({ email }: { email: string }) {
         <input
           type="date"
           name="opening_date"
+          min={new Date().toISOString().split("T")[0]}
+          max="2026-04-24"
           className="mt-2 w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none focus:border-[#2A63FF]"
         />
       </label>
