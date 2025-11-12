@@ -15,9 +15,10 @@ export default function ChatBox({
   channelId = "global-chat",
   open = true,
 }: ChatBoxProps) {
-  const { messages, user, isLoading, sendMessage, isSending } = useChat({
-    channelId,
-  });
+  const { messages, user, isLoading, sendMessage, isSending, error, ready } =
+    useChat({
+      channelId,
+    });
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const lastMessageId = useRef<string | null>(null);
 
@@ -33,7 +34,11 @@ export default function ChatBox({
 
   const handleSend = useMemo(
     () => async (text: string) => {
-      await sendMessage(text);
+      try {
+        await sendMessage(text);
+      } catch (err) {
+        console.error(err);
+      }
     },
     [sendMessage],
   );
@@ -50,7 +55,13 @@ export default function ChatBox({
       </header>
 
       <div className="scrollbar-hide flex-1 overflow-y-auto p-4 space-y-3 text-white">
-        {isLoading ? (
+        {!ready ? (
+          <div className="text-sm text-white/60">
+            Chat temporarily unavailable. Please try again later.
+          </div>
+        ) : error ? (
+          <div className="text-sm text-red-400">{error}</div>
+        ) : isLoading ? (
           <div className="space-y-2 text-sm text-white/60">
             <div className="h-3 w-20 animate-pulse rounded-full bg-white/10" />
             <div className="h-3 w-32 animate-pulse rounded-full bg-white/10" />

@@ -36,9 +36,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="bg-space-gradient">
+    <html
+      lang="en"
+      className={`${spaceGrotesk.variable} ${inter.variable} ${eurostile.variable} bg-space-gradient`}
+    >
       <body
-        className={`${spaceGrotesk.variable} ${inter.variable} ${eurostile.variable} font-body antialiased bg-space-gradient text-white`}
+        className="font-body antialiased bg-space-gradient text-white"
         data-site-mode={process.env.NEXT_PUBLIC_SITE_MODE ?? "staff"}
       >
         {children}
