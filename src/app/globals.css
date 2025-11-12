@@ -18,8 +18,10 @@
   --font-display: var(--font-space-grotesk), "Space Grotesk", "Inter", sans-serif;
 }
 
+html,
 body {
   min-height: 100vh;
+  background-color: #000;
   background-image: radial-gradient(circle at 20% 20%, #0a0f1a, #020409 70%);
   color: var(--foreground);
   font-family: var(--font-sans);
@@ -75,4 +77,18 @@ button {
 ::selection {
   background: rgba(42, 99, 255, 0.55);
   color: #fff;
+}
+
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #aab1c6;
 }
