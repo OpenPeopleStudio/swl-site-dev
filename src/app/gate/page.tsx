@@ -148,9 +148,9 @@ function Gate() {
           <p className="text-xs uppercase tracking-[0.4em] text-white/50">
             SWL Cortex Gate
           </p>
-          <h1 className="text-3xl font-light">Staff access</h1>
+          <h1 className="text-3xl font-light">Welcome</h1>
           <p className="text-sm text-white/60">
-            Authenticate with your Snow White Laundry staff credentials.
+            Sign in or create a Snow White Laundry portal profile to continue.
           </p>
         </div>
 
