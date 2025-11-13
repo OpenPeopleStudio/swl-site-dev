@@ -8,6 +8,7 @@ import { AuthStatusBanner } from "@/shared/ui/AuthStatusBanner";
 import { ConditionalFloatingChat } from "@/shared/ui/ConditionalFloatingChat";
 import { CustomerConciergeLauncher } from "@/shared/ui/CustomerConciergeLauncher";
 import { PosToggleButton } from "@/components/pos/PosToggleButton";
+import { ServiceWorkerRegister } from "@/shared/ui/ServiceWorkerRegister";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -59,6 +60,7 @@ export default function RootLayout({
         <PosToggleButton />
         <CustomerConciergeLauncher />
         <ConditionalFloatingChat />
+        <ServiceWorkerRegister />
       </body>
     </html>
   );

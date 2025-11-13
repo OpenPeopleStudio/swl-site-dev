@@ -11,6 +11,11 @@ type TableBlock = {
   zone: "dining" | "chef" | "bar";
   canCombine: boolean;
   status: TableStatus;
+  currentCourse?: string;
+  lastOrderMinutes?: number;
+  seatedMinutes?: number;
+  guestNames?: string[];
+  billTotal?: number;
 };
 
 type SeatSlot = {
@@ -63,6 +68,11 @@ const DINING_TABLES: TableBlock[] = Array.from({ length: 14 }).map((_, index) =>
   zone: "dining",
   canCombine: true,
   status: index % 4 === 0 ? "ordering" : index % 4 === 1 ? "open" : index % 4 === 2 ? "served" : "paying",
+  currentCourse: ["Prelude", "Course II", "Course III", "Dessert"][index % 4],
+  lastOrderMinutes: (index % 5) * 7 + 5,
+  seatedMinutes: (index % 6) * 12 + 20,
+  guestNames: index % 3 === 0 ? ["Aya", "Ken"] : ["Guest"],
+  billTotal: 240 + index * 8,
 }));
 
 const CHEF_TABLES: TableBlock[] = Array.from({ length: 4 }).map((_, index) => ({
@@ -72,6 +82,11 @@ const CHEF_TABLES: TableBlock[] = Array.from({ length: 4 }).map((_, index) => ({
   zone: "chef",
   canCombine: false,
   status: index % 2 === 0 ? "ordering" : "served",
+  currentCourse: index % 2 === 0 ? "Chef's Notes" : "Prelude",
+  lastOrderMinutes: 4 + index * 3,
+  seatedMinutes: 18 + index * 6,
+  guestNames: [`Chef's Guest ${index + 1}`],
+  billTotal: 180 + index * 20,
 }));
 
 const BAR_SEATS: TableBlock[] = Array.from({ length: 4 }).map((_, index) => ({
@@ -81,6 +96,11 @@ const BAR_SEATS: TableBlock[] = Array.from({ length: 4 }).map((_, index) => ({
   zone: "bar",
   canCombine: false,
   status: "open",
+  currentCourse: "Snacks",
+  lastOrderMinutes: 0,
+  seatedMinutes: 0,
+  guestNames: [],
+  billTotal: 0,
 }));
 
 const TABLE_BLOCKS: TableBlock[] = [...DINING_TABLES, ...CHEF_TABLES, ...BAR_SEATS];
@@ -150,6 +170,7 @@ const QUICK_ACTIONS = ["Fire Next Course", "Mark Allergies", "Print Check", "Spl
 
 export function PosWorkspace() {
   const [selectedBlocks, setSelectedBlocks] = useState<string[]>([TABLE_BLOCKS[0].id]);
+  const [viewMode, setViewMode] = useState<"ordering" | "layout">("ordering");
   const hasMergedBlocks = selectedBlocks.length > 1;
   const seatSlots = useMemo(() => generateSeatSlots(selectedBlocks), [selectedBlocks]);
   const [preferredSeat, setPreferredSeat] = useState<string | null>(null);
@@ -166,10 +187,17 @@ export function PosWorkspace() {
   const [modifiersByLine, setModifiersByLine] = useState<Record<string, string[]>>({});
   const [adjustments, setAdjustments] = useState<Record<string, LineAdjustment>>({});
   const [receiptNote, setReceiptNote] = useState("");
+  const layoutMode = viewMode === "layout";
 
   const activeBlocks = useMemo(
     () => TABLE_BLOCKS.filter((block) => selectedBlocks.includes(block.id)),
     [selectedBlocks],
+  );
+  const activeTableId = selectedBlocks[0] ?? TABLE_BLOCKS[0].id;
+  const activeTable = activeBlocks[0] ?? TABLE_BLOCKS[0];
+  const orderingRailTables = useMemo(
+    () => TABLE_BLOCKS.filter((block) => block.status !== "open"),
+    [],
   );
 
   function toggleBlock(blockId: string) {
@@ -197,6 +225,12 @@ export function PosWorkspace() {
       next.add(targetId);
       return Array.from(next);
     });
+  }
+
+  function focusTable(tableId: string) {
+    setSelectedBlocks([tableId]);
+    const slots = generateSeatSlots([tableId]);
+    setPreferredSeat(slots[0]?.id ?? null);
   }
 
 function addItem(item: MenuItem) {
@@ -270,64 +304,109 @@ function addItem(item: MenuItem) {
 
   const lastLine = orderLines.at(-1);
 
-  return (
-    <div className="grid min-h-screen gap-4 bg-[#03040b] px-6 py-8 text-white xl:grid-cols-[320px_minmax(0,1fr)_460px]">
-      <aside className="space-y-5 rounded-[28px] border border-white/10 bg-white/5 p-4 shadow-[0_20px_80px_rgba(0,0,0,0.55)] backdrop-blur">
-        <div className="flex items-center justify-between">
-          <p className="text-[0.55rem] uppercase tracking-[0.4em] text-white/45">Dining Room</p>
-          <span className="text-xs text-white/50">
-            {activeBlocks.reduce((sum, block) => sum + block.seats, 0)} seats selected
-          </span>
-        </div>
-        <TableGrid
-          blocks={TABLE_BLOCKS}
-          selected={selectedBlocks}
-          onToggle={toggleBlock}
-          onMerge={mergeBlocks}
-        />
-        {hasMergedBlocks && (
-          <div className="rounded-2xl border border-white/15 bg-white/5 p-3 text-xs text-white/70">
-            <p className="text-[0.55rem] uppercase tracking-[0.4em] text-white/45">Merged</p>
-            <p className="mt-1 font-medium">
-              {activeBlocks.map((block) => block.label).join(" + ")}
+  if (layoutMode) {
+    return (
+      <div className="flex flex-col gap-6 bg-[#03040b] px-6 py-8 text-white">
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-[32px] border border-white/10 bg-white/5 p-5 shadow-[0_25px_90px_rgba(0,0,0,0.45)]">
+          <div>
+            <p className="text-xs uppercase tracking-[0.4em] text-white/45">Table Layout</p>
+            <h1 className="text-3xl font-light tracking-[0.25em]">Arrange + Seat Guests</h1>
+            <p className="text-sm text-white/60">
+              Drag tables to merge, seat parties, and review dwell times before sending to ordering.
             </p>
-            <button
-              type="button"
-              onClick={() => setSelectedBlocks([selectedBlocks[0]])}
-              className="mt-2 text-[0.55rem] uppercase tracking-[0.4em] text-white/60 underline-offset-2 hover:text-white"
-            >
-              Unmerge tables
-            </button>
           </div>
-        )}
-        <SeatSummary
-          seatSlots={seatSlots}
-          activeSeat={activeSeat}
-          onChangeSeat={(seat) => setPreferredSeat(seat)}
-        />
-      </aside>
+          <button
+            type="button"
+            onClick={() => setViewMode("ordering")}
+            className="rounded-full border border-white/30 px-5 py-2 text-xs uppercase tracking-[0.4em] text-white/80 hover:border-white/70"
+          >
+            Exit Layout
+          </button>
+        </div>
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+          <section className="space-y-5 rounded-[28px] border border-white/10 bg-white/5 p-5 shadow-[0_25px_90px_rgba(0,0,0,0.45)]">
+            <TableGrid
+              blocks={TABLE_BLOCKS}
+              selected={selectedBlocks}
+              onToggle={toggleBlock}
+              onMerge={mergeBlocks}
+            />
+            {hasMergedBlocks && (
+              <div className="rounded-2xl border border-white/15 bg-white/5 p-3 text-xs text-white/70">
+                <p className="text-[0.55rem] uppercase tracking-[0.4em] text-white/45">Merged</p>
+                <p className="mt-1 font-medium">
+                  {activeBlocks.map((block) => block.label).join(" + ")}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => focusTable(activeBlocks[0]?.id ?? TABLE_BLOCKS[0].id)}
+                  className="mt-2 text-[0.55rem] uppercase tracking-[0.4em] text-white/60 underline-offset-2 hover:text-white"
+                >
+                  Unmerge tables
+                </button>
+              </div>
+            )}
+            <SeatSummary
+              seatSlots={seatSlots}
+              activeSeat={activeSeat}
+              onChangeSeat={(seat) => setPreferredSeat(seat)}
+            />
+          </section>
+          <TableInfoPanel block={activeTable} mergedBlocks={hasMergedBlocks ? activeBlocks : undefined} />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid min-h-screen gap-4 bg-[#03040b] px-6 py-8 text-white xl:grid-cols-[260px_minmax(0,1fr)_420px]">
+      <ActiveOrderRail
+        tables={orderingRailTables}
+        activeId={activeTableId}
+        onSelect={focusTable}
+        onOpenLayout={() => setViewMode("layout")}
+      />
 
       <main className="space-y-5 rounded-[32px] border border-white/8 bg-white/[0.03] p-5 shadow-[0_25px_90px_rgba(0,0,0,0.5)]">
-        <header className="flex flex-wrap items-center justify-between gap-4">
+        <header className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-[0.55rem] uppercase tracking-[0.4em] text-white/45">Active Order</p>
+            <p className="text-[0.55rem] uppercase tracking-[0.4em] text-white/45">Ordering · {activeTable.label}</p>
             <h2 className="text-2xl font-light">
-              {activeBlocks.map((block) => block.label).join(" + ")}
+              {activeTable.guestNames?.join(", ") || "Unassigned"} · Party{" "}
+              {activeTable.guestNames?.length ?? activeTable.seats}
             </h2>
-            <p className="text-xs text-white/60">Seat {activeSeat || "-"} focused</p>
+            <p className="text-xs text-white/60">
+              {activeTable.currentCourse ?? "Prelude"} · {activeTable.lastOrderMinutes ?? 0}m since last order
+            </p>
           </div>
-          <div className="flex gap-2">
-            {QUICK_ACTIONS.slice(0, 2).map((action) => (
-              <button
-                key={action}
-                type="button"
-                className="rounded-full border border-white/20 px-4 py-2 text-[0.6rem] uppercase tracking-[0.4em] text-white/70 hover:border-white/50"
-              >
-                {action}
-              </button>
-            ))}
-          </div>
+          <button
+            type="button"
+            onClick={() => setViewMode("layout")}
+            className="rounded-full border border-white/20 px-4 py-2 text-[0.55rem] uppercase tracking-[0.4em] text-white/70 hover:border-white/50"
+          >
+            Table Layout
+          </button>
         </header>
+
+        <div className="flex flex-wrap gap-2">
+          {QUICK_ACTIONS.map((action) => (
+            <button
+              key={action}
+              type="button"
+              className="rounded-full border border-white/20 px-4 py-1 text-[0.55rem] uppercase tracking-[0.4em] text-white/70 hover:border-white/50"
+            >
+              {action}
+            </button>
+          ))}
+        </div>
+
+        <section className="rounded-[24px] border border-white/10 bg-white/5 p-4 shadow-[0_20px_70px_rgba(0,0,0,0.4)]">
+          <SeatSummary
+            seatSlots={seatSlots}
+            activeSeat={activeSeat}
+            onChangeSeat={(seat) => setPreferredSeat(seat)}
+          />
+        </section>
 
         <div className="grid gap-4 lg:grid-cols-2">
           {MENU.map((category) => (
@@ -372,19 +451,15 @@ function addItem(item: MenuItem) {
           ))}
         </div>
 
-        <ModifierPanel
-          lastLine={lastLine}
-          modifiersByLine={modifiersByLine}
-          onToggle={toggleModifier}
-        />
+        <ModifierPanel lastLine={lastLine} modifiersByLine={modifiersByLine} onToggle={toggleModifier} />
       </main>
 
       <aside className="space-y-4 rounded-[28px] border border-white/10 bg-white/5 p-5 shadow-[0_25px_80px_rgba(0,0,0,0.55)]">
         <header className="flex items-center justify-between">
           <div>
-            <p className="text-[0.55rem] uppercase tracking-[0.4em] text-white/50">Ticket</p>
+            <p className="text-[0.55rem] uppercase tracking-[0.4em] text-white/50">Ticket · {activeTable.label}</p>
             <p className="text-xs text-white/60">
-              {activeBlocks.map((block) => block.label).join(" + ")} · seat {activeSeat || "-"}
+              Seat {activeSeat || "-"} · {activeTable.guestNames?.join(", ") || "Guest"}
             </p>
           </div>
           <button
@@ -588,6 +663,133 @@ function TableGrid({
   );
 }
 
+function TableInfoPanel({
+  block,
+  mergedBlocks,
+}: {
+  block: TableBlock;
+  mergedBlocks?: TableBlock[];
+}) {
+  if (!block) return null;
+  const dwell = formatMinutes(block.seatedMinutes);
+  return (
+    <section className="space-y-4 rounded-[28px] border border-white/10 bg-gradient-to-br from-white/10/60 to-transparent p-5 shadow-[0_25px_90px_rgba(0,0,0,0.45)]">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-xs uppercase tracking-[0.4em] text-white/45">Table Detail</p>
+          <h2 className="text-2xl font-light text-white">{block.label}</h2>
+        </div>
+        <span className="rounded-full border border-white/20 px-3 py-1 text-[0.6rem] uppercase tracking-[0.4em] text-white/70">
+          {block.status}
+        </span>
+      </div>
+      {mergedBlocks && mergedBlocks.length > 1 && (
+        <div className="rounded-2xl border border-white/15 bg-white/5 p-3 text-xs text-white/70">
+          <p className="text-[0.55rem] uppercase tracking-[0.4em] text-white/45">Merged with</p>
+          <p>{mergedBlocks.map((item) => item.label).join(", ")}</p>
+        </div>
+      )}
+      <dl className="grid gap-3 text-sm text-white/70">
+        <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-3 py-2">
+          <dt className="uppercase tracking-[0.3em] text-white/40 text-[0.55rem]">Guests</dt>
+          <dd>{block.guestNames?.join(", ") || "Unassigned"}</dd>
+        </div>
+        <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-3 py-2">
+          <dt className="uppercase tracking-[0.3em] text-white/40 text-[0.55rem]">Course</dt>
+          <dd>{block.currentCourse ?? "Prelude"}</dd>
+        </div>
+        <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-3 py-2">
+          <dt className="uppercase tracking-[0.3em] text-white/40 text-[0.55rem]">Dwell</dt>
+          <dd>{dwell}</dd>
+        </div>
+        <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-3 py-2">
+          <dt className="uppercase tracking-[0.3em] text-white/40 text-[0.55rem]">Bill</dt>
+          <dd>{formatCurrency(block.billTotal)}</dd>
+        </div>
+      </dl>
+      <button
+        type="button"
+        className="w-full rounded-full border border-white/20 px-4 py-2 text-xs uppercase tracking-[0.4em] text-white/80 hover:border-white/60"
+      >
+        Seat Guest / Update Party
+      </button>
+    </section>
+  );
+}
+
+function ActiveOrderRail({
+  tables,
+  activeId,
+  onSelect,
+  onOpenLayout,
+}: {
+  tables: TableBlock[];
+  activeId: string;
+  onSelect: (tableId: string) => void;
+  onOpenLayout: () => void;
+}) {
+  return (
+    <aside className="space-y-4 rounded-[28px] border border-white/10 bg-white/5 p-4 shadow-[0_20px_80px_rgba(0,0,0,0.55)] backdrop-blur">
+      <div className="flex items-center justify-between">
+        <p className="text-[0.55rem] uppercase tracking-[0.4em] text-white/45">Active Tables</p>
+        <button
+          type="button"
+          onClick={onOpenLayout}
+          className="rounded-full border border-white/20 px-3 py-1 text-[0.55rem] uppercase tracking-[0.4em] text-white/70 hover:border-white/60"
+        >
+          Layout
+        </button>
+      </div>
+      <div className="space-y-3">
+        {tables.map((table) => (
+          <ActiveTableCard
+            key={table.id}
+            table={table}
+            active={table.id === activeId}
+            onSelect={() => onSelect(table.id)}
+          />
+        ))}
+        {tables.length === 0 && (
+          <p className="text-sm text-white/60">No active tickets at the moment.</p>
+        )}
+      </div>
+    </aside>
+  );
+}
+
+function ActiveTableCard({
+  table,
+  active,
+  onSelect,
+}: {
+  table: TableBlock;
+  active: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className={`w-full rounded-2xl border px-3 py-2 text-left transition ${
+        active
+          ? "border-white/70 bg-white/10 shadow-[0_12px_30px_rgba(0,0,0,0.45)]"
+          : "border-white/15 bg-white/0 hover:border-white/30"
+      }`}
+    >
+      <div className="flex items-center justify-between">
+        <p className="text-sm font-medium">{table.label}</p>
+        <span className="text-xs uppercase tracking-[0.3em] text-white/50">{table.status}</span>
+      </div>
+      <p className="text-xs text-white/60">
+        {table.currentCourse ?? "Prelude"} · {table.lastOrderMinutes ?? 0}m since fire
+      </p>
+      <p className="text-xs text-white/40">
+        Party {table.guestNames?.length ?? table.seats} · {formatCurrency(table.billTotal)}
+      </p>
+    </button>
+  );
+}
+
 function SeatSummary({
   seatSlots,
   activeSeat,
@@ -621,6 +823,24 @@ function SeatSummary({
       </div>
     </div>
   );
+}
+
+function formatMinutes(minutes?: number) {
+  if (!minutes && minutes !== 0) return "–";
+  if (minutes < 60) return `${minutes}m`;
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return `${hours}h ${mins}m`;
+}
+
+function formatCurrency(amount?: number) {
+  if (typeof amount !== "number") return "—";
+  return Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
 }
 
 function ModifierPanel({
