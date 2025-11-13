@@ -8,7 +8,7 @@ import { MessageBubble } from "@/apps/chat/components/MessageBubble";
 type MessageFeedProps = {
   messages: ChatMessageRecord[];
   currentUserId?: string;
-  onReact: (messageId: string, emoji: string) => void;
+  onToggleReaction: (messageId: string, emoji: string) => void;
   onEdit: (messageId: string, initial: string | null) => void;
   onDelete: (messageId: string) => void;
   onPreviewMedia: (url: string) => void;
@@ -18,7 +18,7 @@ type MessageFeedProps = {
 export function MessageFeed({
   messages,
   currentUserId,
-  onReact,
+  onToggleReaction,
   onEdit,
   onDelete,
   onPreviewMedia,
@@ -58,7 +58,7 @@ export function MessageFeed({
                 key={message.id}
                 message={message}
                 currentUserId={currentUserId}
-                onReact={onReact}
+                onToggleReaction={onToggleReaction}
                 onEdit={onEdit}
                 onDelete={onDelete}
                 onPreviewMedia={onPreviewMedia}

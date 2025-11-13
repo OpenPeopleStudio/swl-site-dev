@@ -16,9 +16,7 @@ export function FloatingChat() {
       >
         <MessageCircle className="h-6 w-6" />
       </button>
-      {open && (
-        <ChatDrawer open={open} onClose={() => setOpen(false)} variant="overlay" />
-      )}
+      {open && <ChatDrawer open={open} onClose={() => setOpen(false)} />}
     </>
   );
 }

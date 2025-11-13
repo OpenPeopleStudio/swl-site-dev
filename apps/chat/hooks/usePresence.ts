@@ -1,87 +1,57 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { startTransition, useCallback, useEffect, useState } from "react";
 import { supabaseBrowser } from "@/lib/supabaseBrowser";
-import type { PresenceUser } from "@/apps/chat/types";
 
-type PresenceIdentity = {
-  id?: string | null;
-  name?: string | null;
-  email?: string | null;
+export type StaffPresence = {
+  id: string;
+  full_name?: string | null;
   role?: string | null;
   avatar_url?: string | null;
+  state?: string | null;
+  last_active?: string | null;
 };
 
-type PresencePayload = {
-  user_id: string;
-  name?: string | null;
-  role?: string | null;
-  avatar_url?: string | null;
-  state?: "online" | "away";
-  last_active?: string;
-};
-
-export function usePresence(identity?: PresenceIdentity | null) {
+export function usePresence() {
   const supabase = supabaseBrowser;
-  const [onlineUsers, setOnlineUsers] = useState<PresenceUser[]>([]);
+  const [staff, setStaff] = useState<StaffPresence[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const key = useMemo(() => identity?.id ?? null, [identity?.id]);
+  const fetchStaff = useCallback(async () => {
+    startTransition(() => setLoading(true));
+    const { data, error } = await supabase
+      .from("staff_with_presence")
+      .select("id, full_name, role, avatar_url, state, last_active");
+    if (error) {
+      console.error("presence fetch failed", error);
+      startTransition(() => setStaff([]));
+    } else {
+      startTransition(() => setStaff(data ?? []));
+    }
+    startTransition(() => setLoading(false));
+  }, [supabase]);
 
   useEffect(() => {
-    if (!key) return undefined;
-    const channel = supabase.channel("presence:swl", {
-      config: {
-        presence: {
-          key,
+    startTransition(() => {
+      void fetchStaff();
+    });
+  }, [fetchStaff]);
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("presence:staff")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "presence" },
+        () => {
+          void fetchStaff();
         },
-      },
-    });
-
-    channel.on("presence", { event: "sync" }, () => {
-      const state = channel.presenceState<Record<string, PresencePayload[]>>();
-      const groups = Object.values(state) as unknown as PresencePayload[][];
-      const flattened: PresenceUser[] = [];
-      groups.forEach((group) => {
-        group.forEach((entry) => {
-          flattened.push({
-            user_id: entry.user_id,
-            name: entry.name,
-            role: entry.role,
-            avatar_url: entry.avatar_url,
-            state: entry.state ?? "online",
-            last_active: entry.last_active,
-          });
-        });
-      });
-      setOnlineUsers(flattened);
-    });
-
-    const subscribePromise = channel.subscribe(async (status) => {
-      if (status !== "SUBSCRIBED") return;
-      await channel.track({
-        user_id: key,
-        name: identity?.name ?? identity?.email ?? "Staff",
-        role: identity?.role ?? "team",
-        avatar_url: identity?.avatar_url ?? null,
-        state: "online",
-        last_active: new Date().toISOString(),
-      });
-    });
-
-    const heartbeat = setInterval(() => {
-      void channel.track({
-        user_id: key,
-        state: "online",
-        last_active: new Date().toISOString(),
-      });
-    }, 30_000);
-
+      )
+      .subscribe();
     return () => {
-      clearInterval(heartbeat);
-      void subscribePromise;
       supabase.removeChannel(channel);
     };
-  }, [key, supabase, identity?.name, identity?.email, identity?.role, identity?.avatar_url]);
+  }, [fetchStaff, supabase]);
 
-  return { onlineUsers };
+  return { staff, loading, refresh: fetchStaff };
 }

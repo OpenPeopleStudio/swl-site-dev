@@ -8,7 +8,7 @@ import { ReactionBar } from "@/apps/chat/components/ReactionBar";
 type MessageBubbleProps = {
   message: ChatMessageRecord;
   currentUserId?: string;
-  onReact: (messageId: string, emoji: string) => void;
+  onToggleReaction: (messageId: string, emoji: string) => void;
   onEdit: (messageId: string, initial: string | null) => void;
   onDelete: (messageId: string) => void;
   onPreviewMedia?: (url: string) => void;
@@ -23,7 +23,7 @@ const bubbleMotion = {
 export function MessageBubble({
   message,
   currentUserId,
-  onReact,
+  onToggleReaction,
   onEdit,
   onDelete,
   onPreviewMedia,
@@ -125,7 +125,7 @@ export function MessageBubble({
                     type="button"
                     className="w-full rounded-xl px-3 py-2 text-white/70 hover:bg-white/10"
                     onClick={() => {
-                      onReact(message.id, "❤️");
+                      onToggleReaction(message.id, "❤️");
                       setMenuOpen(false);
                     }}
                   >
@@ -135,7 +135,7 @@ export function MessageBubble({
                     type="button"
                     className="w-full rounded-xl px-3 py-2 text-white/70 hover:bg-white/10"
                     onClick={() => {
-                      onReact(message.id, "🔥");
+                      onToggleReaction(message.id, "🔥");
                       setMenuOpen(false);
                     }}
                   >
@@ -153,7 +153,7 @@ export function MessageBubble({
             reactions={message.reactions}
             currentUserId={currentUserId}
             onToggleReaction={(emoji, targetMessageId) =>
-              onReact(targetMessageId, emoji)
+              onToggleReaction(targetMessageId, emoji)
             }
           />
         )}

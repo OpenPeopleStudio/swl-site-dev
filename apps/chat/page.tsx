@@ -1,6 +1,6 @@
 "use client";
 
-import { ChatDrawer } from "@/apps/chat/components/ChatDrawer";
+import { ChatContainer } from "@/apps/chat/components/ChatContainer";
 
 export default function ChatPage() {
   return (
@@ -10,13 +10,16 @@ export default function ChatPage() {
           <p className="text-xs uppercase tracking-[0.6em] text-white/40">
             Cortex Chat v2
           </p>
-          <h1 className="text-4xl font-light">Snow White Laundry — Staff Line</h1>
+          <h1 className="text-4xl font-light">
+            Snow White Laundry — Staff Line
+          </h1>
           <p className="text-white/60">
-            Real-time coordination with presence, reactions, GIFs, and uploads across the entire crew.
+            Real-time coordination with presence, reactions, GIFs, uploads, and
+            direct conversations.
           </p>
         </div>
 
-        <ChatDrawer open variant="page" />
+        <ChatContainer variant="page" />
       </div>
     </div>
   );
