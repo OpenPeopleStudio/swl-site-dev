@@ -124,7 +124,7 @@ values
 on conflict (email) do nothing;
 
 create table if not exists public.staff_reflections (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   owner text not null,
   title text,
   summary text not null,
