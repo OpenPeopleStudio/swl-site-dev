@@ -2,13 +2,12 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { supabaseBrowser } from "@/lib/supabaseBrowser";
+import { supabase } from "@/lib/supabaseClient";
 import toast from "react-hot-toast";
 
 type Mode = "email" | "password";
 
 export function LoginPanel() {
-  const supabase = supabaseBrowser;
   const [mode, setMode] = useState<Mode>("email");
   const [email, setEmail] = useState("");
   const [userExists, setUserExists] = useState<boolean | null>(null);
