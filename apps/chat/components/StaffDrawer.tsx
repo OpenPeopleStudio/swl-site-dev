@@ -13,11 +13,11 @@ export function StaffDrawer({ currentUserId, onSelect }: StaffDrawerProps) {
   const available = staff.filter((member) => member.id !== currentUserId);
 
   return (
-    <details className="relative rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/80 transition hover:border-white/40">
-      <summary className="cursor-pointer select-none text-sm tracking-[0.3em] text-white/70 outline-none">
-        Staff
+    <details className="relative rounded-2xl border border-white/10 px-4 py-2 text-sm text-white/80 transition hover:border-white/30">
+      <summary className="flex cursor-pointer select-none items-center gap-2 text-xs uppercase tracking-[0.35em] text-white/60 outline-none">
+        Crew
       </summary>
-      <div className="absolute right-0 top-full z-20 mt-3 w-72 rounded-2xl border border-white/10 bg-black/80 p-3 shadow-[0_20px_60px_rgba(0,0,0,0.6)] backdrop-blur-xl">
+      <div className="absolute right-0 top-full z-20 mt-3 w-72 rounded-2xl border border-white/10 bg-[#090912]/95 p-3 shadow-[0_25px_80px_rgba(0,0,0,0.75)] backdrop-blur">
         {loading ? (
           <p className="px-2 py-3 text-center text-xs text-white/50">
             Loading roster…

@@ -35,14 +35,14 @@ export function MessageFeed({
   return (
     <div
       ref={scrollRef}
-      className="flex-1 overflow-y-auto rounded-3xl border border-white/10 bg-black/40 p-4 shadow-[inset_0_0_80px_rgba(0,0,0,0.45)]"
+      className="flex-1 overflow-y-auto rounded-[24px] border border-white/5 bg-white/5 p-5 backdrop-blur-[12px]"
     >
       {loading ? (
-        <div className="flex h-full items-center justify-center text-white/60">
+        <div className="flex h-full items-center justify-center text-white/50">
           Loading chat…
         </div>
       ) : messages.length === 0 ? (
-        <div className="flex h-full items-center justify-center text-center text-sm text-white/50">
+        <div className="flex h-full items-center justify-center text-center text-sm text-white/60">
           <div>
             <p className="text-lg font-light text-white">Cortex Chat v2</p>
             <p className="mt-2 text-white/70">

@@ -45,36 +45,35 @@ export function ReactionBar({
 
   return (
     <div className="flex flex-wrap items-center gap-1">
-      {/* Existing Reactions */}
       {grouped.map(([emoji, meta]) => (
         <motion.button
           key={`${messageId}-${emoji}`}
           type="button"
           onClick={() => onToggleReaction(emoji, messageId)}
-          whileTap={{ scale: 0.9 }}
-          className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs transition ${
+          whileTap={{ scale: 0.92 }}
+          className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[11px] leading-none transition ${
             meta.mine
-              ? "border-white/80 bg-white/20 text-white"
-              : "border-white/10 bg-white/5 text-white/70 hover:border-white/40"
+              ? "border-[#3c6dff] bg-[#1b3cff] text-white shadow-[0_4px_18px_rgba(60,109,255,0.45)]"
+              : "border-white/10 bg-white/5 text-white/80 hover:border-white/30"
           }`}
         >
           <span>{emoji}</span>
-          <span>{meta.count}</span>
+          <span className="font-medium">{meta.count}</span>
         </motion.button>
       ))}
 
-      {/* Default Add Reactions */}
-      {DEFAULT_REACTIONS.map((emoji) => (
-        <motion.button
-          key={`add-${messageId}-${emoji}`}
-          type="button"
-          onClick={() => onToggleReaction(emoji, messageId)}
-          whileTap={{ scale: 0.9 }}
-          className="rounded-full border border-white/10 px-2 py-1 text-xs text-white/60 transition hover:border-white/40 hover:text-white"
-        >
-          {emoji}
-        </motion.button>
-      ))}
+      {grouped.length === 0 &&
+        DEFAULT_REACTIONS.map((emoji) => (
+          <motion.button
+            key={`add-${messageId}-${emoji}`}
+            type="button"
+            onClick={() => onToggleReaction(emoji, messageId)}
+            whileTap={{ scale: 0.92 }}
+            className="rounded-full border border-transparent px-2 py-1 text-[12px] text-white/50 transition hover:bg-white/10 hover:text-white"
+          >
+            {emoji}
+          </motion.button>
+        ))}
     </div>
   );
 }

@@ -39,6 +39,22 @@ export type OpeningReservation = {
   created_at?: string | null;
 };
 
+export type CustomerInteraction = {
+  id: number;
+  customer_id?: number | null;
+  email?: string | null;
+  interaction_type: string;
+  channel?: string | null;
+  summary?: string | null;
+  payload?: Record<string, unknown> | null;
+  created_at: string;
+  customers?: {
+    name?: string | null;
+    first_name?: string | null;
+    last_name?: string | null;
+  } | null;
+};
+
 const baseColumns = "*";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -137,4 +153,35 @@ export async function listOpeningReservations() {
     throw error;
   }
   return (data ?? []) as OpeningReservation[];
+}
+
+export async function listRecentCustomerInteractions(limit = 20) {
+  const supabase = requireSupabaseAdmin();
+  const { data, error } = await supabase
+    .from("customer_interactions")
+    .select(
+      `
+        id,
+        customer_id,
+        email,
+        interaction_type,
+        channel,
+        summary,
+        payload,
+        created_at,
+        customers:customer_id (
+          name,
+          first_name,
+          last_name
+        )
+      `,
+    )
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error("listRecentCustomerInteractions error", error);
+    throw error;
+  }
+  return (data ?? []) as CustomerInteraction[];
 }

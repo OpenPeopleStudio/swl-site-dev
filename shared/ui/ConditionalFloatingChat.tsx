@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import FloatingChat from "@/shared/ui/FloatingChat";
 
-const HIDDEN_PREFIXES = ["/customer"];
+const HIDDEN_PREFIXES = ["/customer", "/gate"];
 
 export function ConditionalFloatingChat() {
   const pathname = usePathname();

@@ -34,18 +34,18 @@ export function ChatComposer({ onSend }: ComposerProps) {
   }, [gifUrl, onSend, text, uploadUrl]);
 
   return (
-    <div className="space-y-3 rounded-3xl border border-white/10 bg-white/5 p-4 shadow-[0_30px_90px_rgba(0,0,0,0.4)]">
-      <div className="flex items-center justify-between text-xs uppercase tracking-[0.3em] text-white/40">
+    <div className="space-y-3 rounded-[24px] border border-white/5 bg-white/5 p-4 backdrop-blur">
+      <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.3em] text-white/40">
         <span>Compose</span>
         {uploading && <span className="text-emerald-300">Uploading…</span>}
       </div>
 
       {uploadUrl && (
-        <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/30 p-3 text-sm text-white/70">
+        <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-3 text-sm text-white/80">
           <span className="truncate">{uploadUrl}</span>
           <button
             type="button"
-            className="text-white/60 hover:text-white"
+            className="text-[#ff453a] hover:underline"
             onClick={() => setUploadUrl(null)}
           >
             Remove
@@ -53,11 +53,11 @@ export function ChatComposer({ onSend }: ComposerProps) {
         </div>
       )}
       {gifUrl && (
-        <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/30 p-3 text-sm text-white/70">
+        <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-3 text-sm text-white/80">
           <span>GIF attached</span>
           <button
             type="button"
-            className="text-white/60 hover:text-white"
+            className="text-[#ff453a] hover:underline"
             onClick={() => setGifUrl(null)}
           >
             Remove
@@ -76,7 +76,7 @@ export function ChatComposer({ onSend }: ComposerProps) {
           }
         }}
         placeholder="Update the kitchen, share photos, or drop a note…"
-        className="w-full resize-none rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none transition focus:border-white/50"
+        className="w-full resize-none rounded-2xl border border-white/10 bg-[#11111a] px-4 py-3 text-sm text-white outline-none transition focus:border-[#3c6dff]/60"
       />
 
       <div className="flex items-center justify-between">
@@ -90,8 +90,8 @@ export function ChatComposer({ onSend }: ComposerProps) {
             onClick={() => setGifOpen((prev) => !prev)}
             className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs transition ${
               gifOpen
-                ? "border-white/70 text-white"
-                : "border-white/10 text-white/70 hover:border-white/40 hover:text-white"
+                ? "border-[#3c6dff] bg-[#13255a] text-white"
+                : "border-white/10 text-white/70 hover:border-white/40"
             }`}
           >
             <Sparkles className="h-4 w-4" />
@@ -103,7 +103,7 @@ export function ChatComposer({ onSend }: ComposerProps) {
           type="button"
           onClick={() => void handleSend()}
           whileTap={{ scale: 0.95 }}
-          className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-gradient-to-r from-blue-600/80 to-violet-600/80 px-4 py-2 text-sm font-medium text-white shadow-[0_10px_40px_rgba(59,130,246,0.35)] transition hover:from-blue-500 hover:to-violet-500"
+          className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#355dff] to-[#6f4bff] px-5 py-2 text-sm font-semibold text-white shadow-[0_20px_50px_rgba(93,81,255,0.45)] transition hover:from-[#4668ff] hover:to-[#815bff]"
         >
           Send
           <Send className="h-4 w-4" />

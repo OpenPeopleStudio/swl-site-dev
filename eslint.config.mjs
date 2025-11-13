@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Also ignore generated artifacts inside nested workspaces (e.g. docs/*/.next).
+    "**/.next/**",
   ]),
 ]);
 

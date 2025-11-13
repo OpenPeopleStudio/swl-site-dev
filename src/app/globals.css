@@ -103,3 +103,57 @@ textarea::placeholder {
   backdrop-filter: blur(30px);
   padding: 2.5rem;
 }
+
+.gate-holo-panel {
+  position: relative;
+  border-radius: 52px;
+  padding: clamp(2rem, 3vw, 2.7rem);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background:
+    radial-gradient(circle at 12% 8%, rgba(84, 110, 194, 0.14), transparent 55%),
+    radial-gradient(circle at 78% 72%, rgba(21, 188, 210, 0.12), transparent 60%),
+    rgba(2, 3, 12, 0.58);
+  box-shadow:
+    0 25px 90px rgba(0, 0, 0, 0.55),
+    inset 0 0 120px rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(65px) saturate(120%);
+  -webkit-backdrop-filter: blur(65px) saturate(120%);
+  isolation: isolate;
+}
+
+.gate-holo-panel::before,
+.gate-holo-panel::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: inherit;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.gate-holo-panel::before {
+  background: radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.16), transparent 60%);
+  opacity: 0.25;
+  filter: blur(90px);
+}
+
+.gate-holo-panel::after {
+  inset: 18px;
+  background: linear-gradient(110deg, rgba(255, 255, 255, 0.06), transparent 70%);
+  opacity: 0.3;
+}
+
+.gate-holo-panel {
+  border: none;
+  border-radius: 48px;
+  padding: clamp(2rem, 3vw, 2.9rem);
+  background:
+    radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.16), transparent 55%),
+    radial-gradient(circle at 72% 70%, rgba(148, 163, 184, 0.12), transparent 60%),
+    rgba(4, 4, 6, 0.95);
+  box-shadow:
+    0 55px 160px rgba(0, 0, 0, 0.75),
+    inset 0 0 80px rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(55px) saturate(130%);
+  -webkit-backdrop-filter: blur(55px) saturate(130%);
+}

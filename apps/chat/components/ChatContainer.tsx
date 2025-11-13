@@ -7,10 +7,9 @@ import {
   useMemo,
   useState,
 } from "react";
+import type { ReactNode } from "react";
+import { Inbox, Users, Image as ImageIcon } from "lucide-react";
 import { supabaseBrowser } from "@/lib/supabaseBrowser";
-import { ChannelSelector } from "@/apps/chat/components/ChannelSelector";
-import { StaffDrawer } from "@/apps/chat/components/StaffDrawer";
-import { MessageFeed } from "@/apps/chat/components/MessageFeed";
 import { ChatComposer } from "@/apps/chat/components/ChatComposer";
 import MediaModal from "@/apps/chat/components/MediaModal";
 import { useChannels } from "@/apps/chat/hooks/useChannels";
@@ -19,6 +18,14 @@ import {
   type ChatUser,
 } from "@/apps/chat/hooks/useRealtimeMessages";
 import { getOrCreateDirectChannel } from "@/apps/chat/hooks/useDirectMessage";
+import { usePresence } from "@/apps/chat/hooks/usePresence";
+import {
+  InboxList,
+  type ThreadSummary,
+} from "@/apps/chat/components/imessage/InboxList";
+import { GlobalChatBanner } from "@/apps/chat/components/imessage/GlobalChatBanner";
+import { ConversationPane } from "@/apps/chat/components/imessage/ConversationPane";
+import { UploadButton } from "@/apps/chat/components/UploadButton";
 
 type ChatContainerProps = {
   variant?: "page" | "overlay";
@@ -30,6 +37,9 @@ export function ChatContainer({ variant = "page" }: ChatContainerProps) {
   const [activeChannelId, setActiveChannelId] = useState<string | null>(null);
   const [activeMedia, setActiveMedia] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [inboxOpen, setInboxOpen] = useState(false);
+  const [recipientsOpen, setRecipientsOpen] = useState(false);
+  const [uploaderOpen, setUploaderOpen] = useState(false);
 
   useEffect(() => {
     let ignore = false;
@@ -61,6 +71,7 @@ export function ChatContainer({ variant = "page" }: ChatContainerProps) {
     error: channelsError,
     refresh: refreshChannels,
   } = useChannels(userId);
+  const { staff } = usePresence();
 
   useEffect(() => {
     if (!channels.length) return;
@@ -87,15 +98,54 @@ export function ChatContainer({ variant = "page" }: ChatContainerProps) {
     [channels, activeChannelId],
   );
 
+  const threads = useMemo<ThreadSummary[]>(() => {
+    const base = channels.map((channel) => {
+      const latest =
+        channel.id === activeChannelId && messages.length > 0
+          ? messages[messages.length - 1]
+          : null;
+      return {
+        id: channel.id,
+        title: channel.name ?? "Conversation",
+        lastMessage: latest?.content ?? null,
+        updated_at: latest?.created_at ?? null,
+        isGlobal: channel.type === "global",
+      };
+    });
+
+    return base.sort((a, b) => {
+      if (a.isGlobal && !b.isGlobal) return -1;
+      if (!a.isGlobal && b.isGlobal) return 1;
+      const aTime = a.updated_at ? new Date(a.updated_at).getTime() : 0;
+      const bTime = b.updated_at ? new Date(b.updated_at).getTime() : 0;
+      return bTime - aTime;
+    });
+  }, [channels, messages, activeChannelId]);
+
+  const contacts = useMemo(
+    () =>
+      staff
+        .filter((person) => person.id !== userId)
+        .map((person) => ({
+          id: person.id,
+          name: person.full_name ?? "Unknown",
+          role: person.role ?? undefined,
+          avatarUrl: person.avatar_url ?? undefined,
+        })),
+    [staff, userId],
+  );
+
   const handleStaffSelect = useCallback(
-    async (staff: { id: string; full_name?: string | null }) => {
+    async (staffId: string) => {
       if (!userId) return;
+      const target = staff.find((person) => person.id === staffId);
+      if (!target) return;
       try {
         setActionError(null);
         const channelId = await getOrCreateDirectChannel(
           userId,
-          staff.id,
-          staff.full_name,
+          target.id,
+          target.full_name,
         );
         await refreshChannels();
         setActiveChannelId(channelId);
@@ -105,7 +155,7 @@ export function ChatContainer({ variant = "page" }: ChatContainerProps) {
         );
       }
     },
-    [userId, refreshChannels],
+    [refreshChannels, staff, userId],
   );
 
   const handleSend = useCallback(
@@ -128,54 +178,178 @@ export function ChatContainer({ variant = "page" }: ChatContainerProps) {
 
   const containerClasses =
     variant === "overlay"
-      ? "h-full w-full rounded-[32px] border border-white/10 bg-gradient-to-br from-white/10 to-transparent p-4 text-white shadow-[0_25px_90px_rgba(0,0,0,0.65)]"
-      : "rounded-[40px] border border-white/10 bg-gradient-to-br from-white/10 to-transparent p-6 text-white shadow-[0_60px_140px_rgba(0,0,0,0.6)]";
+      ? "rounded-[24px] border border-white/10 bg-white/5 text-white backdrop-blur-[24px] p-5 shadow-[0_40px_140px_rgba(0,0,0,0.7)]"
+      : "rounded-[28px] border border-white/10 bg-white/5 text-white backdrop-blur-[28px] p-6 shadow-[0_60px_160px_rgba(0,0,0,0.75)]";
+
+  const globalThread = threads.find((thread) => thread.isGlobal);
+  const regularThreads = threads.filter((thread) => !thread.isGlobal);
+
+  const handleQuickUpload = useCallback(
+    async (url: string) => {
+      if (!url) return;
+      await handleSend({ imageUrl: url });
+      setUploaderOpen(false);
+    },
+    [handleSend],
+  );
 
   return (
     <div className={containerClasses}>
-      <div className="flex flex-col gap-6">
-        <div className="space-y-3">
-          <ChannelSelector
-            channels={channels}
-            loading={channelsLoading}
-            activeChannelId={activeChannelId}
-            onSelect={(id) => setActiveChannelId(id)}
-          />
-          <div className="flex justify-end">
-        <StaffDrawer currentUserId={userId} onSelect={handleStaffSelect} />
+      <div className="flex flex-col gap-4">
+        <header className="flex items-center justify-between">
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.45em] text-white/40">
+              Cortex Line
+            </p>
+            <h2 className="text-2xl font-light text-white">
+              {activeChannel?.name ?? "Connecting…"}
+            </h2>
           </div>
-          {channelsError && (
-            <p className="text-sm text-red-300">{channelsError}</p>
+          <div className="flex items-center gap-2">
+            <HeaderButton
+              icon={<Inbox className="h-4 w-4" />}
+              label="Inbox"
+              active={inboxOpen}
+              onClick={() => {
+                setInboxOpen((value) => !value);
+                setRecipientsOpen(false);
+                setUploaderOpen(false);
+              }}
+            />
+            <HeaderButton
+              icon={<Users className="h-4 w-4" />}
+              label="People"
+              active={recipientsOpen}
+              onClick={() => {
+                setRecipientsOpen((value) => !value);
+                setInboxOpen(false);
+                setUploaderOpen(false);
+              }}
+            />
+            <HeaderButton
+              icon={<ImageIcon className="h-4 w-4" />}
+              label="Media"
+              active={uploaderOpen}
+              onClick={() => {
+                setUploaderOpen((value) => !value);
+                setInboxOpen(false);
+                setRecipientsOpen(false);
+              }}
+            />
+          </div>
+        </header>
+
+        <div className="relative min-h-[360px]">
+          {messagesLoading ? (
+            <div className="flex h-full items-center justify-center rounded-3xl border border-white/10 bg-white/5 text-sm text-white/60">
+              Resolving thread…
+            </div>
+          ) : (
+            <ConversationPane
+              messages={messages}
+              currentUserId={userId ?? undefined}
+              contacts={contacts}
+              onQuickSelect={(id) => {
+                void handleStaffSelect(id);
+                setRecipientsOpen(false);
+                setInboxOpen(false);
+              }}
+              onToggleReaction={toggleReaction}
+              onEdit={(messageId, initial) => {
+                const next = window.prompt("Edit message", initial ?? "");
+                if (next === null || !next.trim()) return;
+                void editMessage(messageId, next.trim());
+              }}
+              onDelete={(messageId) => {
+                if (window.confirm("Delete this message for everyone?")) {
+                  void deleteMessage(messageId);
+                }
+              }}
+              onPreviewMedia={(url) => setActiveMedia(url)}
+            />
           )}
-          {actionError && (
-            <p className="text-sm text-red-300">{actionError}</p>
+
+          {inboxOpen && (
+            <FloatingDrawer title="Inbox" onClose={() => setInboxOpen(false)}>
+              {channelsLoading ? (
+                <p className="text-sm text-white/60">Loading threads…</p>
+              ) : (
+                <InboxList
+                  threads={regularThreads}
+                  activeThreadId={activeChannelId}
+                  onSelect={(id) => {
+                    setActiveChannelId(id);
+                    setInboxOpen(false);
+                  }}
+                  renderPinned={
+                    <GlobalChatBanner
+                      title={globalThread?.title ?? "Global Chat"}
+                      description="Pinned for the entire crew"
+                      onOpen={() => {
+                        if (globalThread) {
+                          setActiveChannelId(globalThread.id);
+                          setInboxOpen(false);
+                        }
+                      }}
+                    />
+                  }
+                />
+              )}
+            </FloatingDrawer>
+          )}
+
+          {recipientsOpen && (
+            <FloatingDrawer
+              title="Direct Messages"
+              onClose={() => setRecipientsOpen(false)}
+            >
+              <div className="space-y-2">
+                {contacts.map((contact) => (
+                  <button
+                    key={contact.id}
+                    type="button"
+                    onClick={() => {
+                      void handleStaffSelect(contact.id);
+                      setRecipientsOpen(false);
+                    }}
+                    className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-left text-sm text-white/80 transition hover:border-white/40"
+                  >
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 text-xs uppercase tracking-[0.3em]">
+                      {contact.name.slice(0, 2)}
+                    </span>
+                    <div>
+                      <p className="text-white">{contact.name}</p>
+                      {contact.role && (
+                        <p className="text-[11px] uppercase tracking-[0.3em] text-white/45">
+                          {contact.role}
+                        </p>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </FloatingDrawer>
+          )}
+
+          {uploaderOpen && (
+            <FloatingDrawer
+              title="Media Upload"
+              onClose={() => setUploaderOpen(false)}
+            >
+              <p className="mb-3 text-sm text-white/70">
+                Drop a photo and we’ll post it straight into this thread.
+              </p>
+              <UploadButton onUploaded={(url) => void handleQuickUpload(url)} />
+            </FloatingDrawer>
           )}
         </div>
 
-        <div className="rounded-3xl border border-white/10 bg-black/30 p-4">
-          <div className="flex items-center justify-between text-xs uppercase tracking-[0.4em] text-white/40">
-            <span>{activeChannel?.type === "direct" ? "Direct" : "Channel"}</span>
-            <span>{activeChannel?.name ?? "Select a channel"}</span>
-          </div>
-        </div>
-
-        <MessageFeed
-          messages={messages}
-          loading={messagesLoading}
-          currentUserId={userId ?? undefined}
-          onToggleReaction={toggleReaction}
-          onEdit={(messageId, initial) => {
-            const next = window.prompt("Edit message", initial ?? "");
-            if (next === null || !next.trim()) return;
-            void editMessage(messageId, next.trim());
-          }}
-          onDelete={(messageId) => {
-            if (window.confirm("Delete this message for everyone?")) {
-              void deleteMessage(messageId);
-            }
-          }}
-          onPreviewMedia={(url) => setActiveMedia(url)}
-        />
+        {channelsError && (
+          <p className="text-sm text-rose-300">{channelsError}</p>
+        )}
+        {actionError && (
+          <p className="text-sm text-rose-300">{actionError}</p>
+        )}
 
         <ChatComposer onSend={handleSend} />
       </div>
@@ -186,9 +360,66 @@ export function ChatContainer({ variant = "page" }: ChatContainerProps) {
         onClose={() => setActiveMedia(null)}
       />
       {messageError && (
-        <p className="mt-3 text-center text-sm text-red-300">{messageError}</p>
+        <p className="pt-4 text-center text-sm text-rose-300">{messageError}</p>
       )}
     </div>
+  );
+}
+
+type DrawerProps = {
+  title: string;
+  onClose: () => void;
+  children: ReactNode;
+};
+
+function FloatingDrawer({ title, onClose, children }: DrawerProps) {
+  return (
+    <div className="absolute inset-0 z-20 flex justify-end">
+      <button
+        type="button"
+        onClick={onClose}
+        className="absolute inset-0 cursor-default bg-black/10"
+      >
+        <span className="sr-only">Close drawer</span>
+      </button>
+      <div className="relative z-10 w-full max-w-xs rounded-[28px] border border-white/10 bg-[#04050c]/95 p-4 shadow-[0_30px_80px_rgba(0,0,0,0.7)] backdrop-blur-xl">
+        <div className="mb-3 flex items-center justify-between text-xs uppercase tracking-[0.4em] text-white/50">
+          <span>{title}</span>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full border border-white/15 px-2 py-0.5 text-[10px] uppercase tracking-[0.3em] text-white/60 hover:border-white/40 hover:text-white"
+          >
+            Close
+          </button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+type HeaderButtonProps = {
+  icon: ReactNode;
+  label: string;
+  active?: boolean;
+  onClick: () => void;
+};
+
+function HeaderButton({ icon, label, active, onClick }: HeaderButtonProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex items-center gap-2 rounded-full border px-3 py-1 text-xs uppercase tracking-[0.3em] transition ${
+        active
+          ? "border-white/60 bg-white/15 text-white"
+          : "border-white/20 text-white/70 hover:border-white/40 hover:text-white"
+      }`}
+    >
+      {icon}
+      {label}
+    </button>
   );
 }
 

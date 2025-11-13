@@ -38,7 +38,11 @@ function OrbitRing({ radius }: { radius: number }) {
   );
 }
 
-export default function AgentOrbitMap() {
+type AgentOrbitMapProps = {
+  height?: number | string;
+};
+
+export default function AgentOrbitMap({ height = 600 }: AgentOrbitMapProps) {
   const [states, setStates] = useState<AgentStates>({
     ui: 0.3,
     content: 0.3,
@@ -62,7 +66,14 @@ export default function AgentOrbitMap() {
   }, []);
 
   return (
-    <Canvas style={{ height: 600, background: "black", borderRadius: 16 }}>
+    <Canvas
+      style={{
+        height,
+        width: "100%",
+        background: "black",
+        borderRadius: 16,
+      }}
+    >
       <ambientLight intensity={0.1} />
       <pointLight position={[0, 0, 0]} intensity={2} color="#00F3FF" />
 

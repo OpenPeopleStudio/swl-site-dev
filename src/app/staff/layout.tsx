@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import type { ReactNode } from "react";
+import { useSyncExternalStore, type ReactNode } from "react";
+import BootSequence from "@/components/boot/BootSequence";
 
 const navItems = [
   { label: "Home", href: "/staff" },
@@ -14,11 +15,34 @@ const navItems = [
   { label: "Reflection", href: "/staff/reflection" },
 ];
 
+const BOOT_SEEN_KEY = "swl-staff-booted";
+
 export default function StaffLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const bootState = useSyncExternalStore(
+    subscribeToBootPreference,
+    () => readBootPreference(),
+    () => "pending",
+  );
+
+  function handleBootComplete() {
+    if (typeof window !== "undefined") {
+      try {
+        sessionStorage.setItem(BOOT_SEEN_KEY, "true");
+      } catch {
+        // Ignore storage failures (private browsing, etc.)
+      }
+    }
+    notifyBootPreferenceChange();
+  }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-space-gradient text-white">
+    <>
+      {bootState === "show" && <BootSequence onFinish={handleBootComplete} />}
+      <main
+        className="relative min-h-screen overflow-hidden bg-space-gradient text-white"
+        aria-hidden={bootState === "show"}
+      >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,#1b1f33,transparent_70%)]" />
 
       <motion.div
@@ -70,6 +94,35 @@ export default function StaffLayout({ children }: { children: ReactNode }) {
           {children}
         </section>
       </div>
-    </main>
+      </main>
+    </>
   );
+}
+
+const bootListeners = new Set<() => void>();
+
+function subscribeToBootPreference(listener: () => void) {
+  if (typeof window === "undefined") {
+    return () => undefined;
+  }
+  bootListeners.add(listener);
+  return () => {
+    bootListeners.delete(listener);
+  };
+}
+
+function notifyBootPreferenceChange() {
+  bootListeners.forEach((listener) => listener());
+}
+
+function readBootPreference(): "show" | "hidden" {
+  if (typeof window === "undefined") {
+    return "show";
+  }
+  try {
+    const seen = sessionStorage.getItem(BOOT_SEEN_KEY);
+    return seen === "true" ? "hidden" : "show";
+  } catch {
+    return "show";
+  }
 }

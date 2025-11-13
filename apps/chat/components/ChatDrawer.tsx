@@ -25,10 +25,10 @@ export function ChatDrawer({ open, onClose }: ChatDrawerProps) {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 40, opacity: 0 }}
             transition={{ type: "spring", stiffness: 260, damping: 25 }}
-            className="w-full max-w-3xl rounded-[40px] border border-white/10 bg-black/85 p-4 text-white shadow-[0_40px_140px_rgba(0,0,0,0.85)]"
+            className="w-full max-w-3xl rounded-[32px] border border-white/10 bg-[#04040a]/95 p-4 text-white shadow-[0_50px_160px_rgba(0,0,0,0.9)] backdrop-blur-xl"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="mb-4 flex items-center justify-between border-b border-white/10 pb-3">
+            <div className="mb-4 flex items-center justify-between border-b border-white/5 pb-3">
               <div>
                 <p className="text-xs uppercase tracking-[0.4em] text-white/50">
                   Cortex Chat
@@ -38,7 +38,7 @@ export function ChatDrawer({ open, onClose }: ChatDrawerProps) {
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-full border border-white/15 p-2 text-white/70 transition hover:text-white"
+                className="rounded-full border border-white/10 p-2 text-white/70 transition hover:border-white/40 hover:text-white"
               >
                 <X className="h-4 w-4" />
               </button>

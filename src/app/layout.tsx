@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
-import { ConditionalFloatingChat } from "@/shared/ui/ConditionalFloatingChat";
 import AmbientScene from "@/shared/ui/AmbientScene";
 import { AuthWatcher } from "@/apps/core/AuthWatcher";
 import { AuthStatusBanner } from "@/shared/ui/AuthStatusBanner";
+import { ConditionalFloatingChat } from "@/shared/ui/ConditionalFloatingChat";
+import { CustomerConciergeLauncher } from "@/shared/ui/CustomerConciergeLauncher";
+import { PosToggleButton } from "@/components/pos/PosToggleButton";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -54,6 +56,8 @@ export default function RootLayout({
         <AuthWatcher />
         {showAuthBanner && <AuthStatusBanner />}
         {children}
+        <PosToggleButton />
+        <CustomerConciergeLauncher />
         <ConditionalFloatingChat />
       </body>
     </html>

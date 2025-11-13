@@ -1,131 +1,177 @@
-import { GlassPanel } from "@/components/glass-panel";
+"use client";
 
-const inventory = [
+import { InventoryTopBar } from "@/components/inventory/InventoryTopBar";
+import { InventorySidebar } from "@/components/inventory/InventorySidebar";
+import { InventorySearchBar } from "@/components/inventory/InventorySearchBar";
+import { InventoryNotesPanel } from "@/components/inventory/InventoryNotesPanel";
+import { AIInsightPanel } from "@/components/inventory/AIInsightPanel";
+import { VendorInsightPanel } from "@/components/inventory/VendorInsightPanel";
+
+const sidebarSections = [
   {
-    item: "Detergent S pods",
-    level: 32,
-    eta: "12 hrs",
-    note: "Reorder submitted",
+    title: "Programs",
+    items: [
+      { label: "Overview", href: "/staff/inventory", status: "ok" as const, isActive: true },
+      { label: "Food · Deep Dive", href: "/staff/inventory/food", status: "warning" as const, badge: "live" },
+      { label: "Spirits", href: "/staff/inventory", status: "ok" as const, badge: "soon" },
+      { label: "Linen", href: "/staff/inventory", status: "ok" as const },
+    ],
   },
   {
-    item: "Luxury linen sets",
-    level: 68,
-    eta: "2 days",
-    note: "Stable",
-  },
-  {
-    item: "Machine kits",
-    level: 44,
-    eta: "18 hrs",
-    note: "Need tension belts",
-  },
-  {
-    item: "Fragrance capsules",
-    level: 78,
-    eta: "4 days",
-    note: "Plenty",
+    title: "Automation",
+    items: [
+      { label: "Auto-replenish", href: "/staff/inventory", status: "warning" as const },
+      { label: "Waste telemetry", href: "/staff/inventory", status: "ok" as const },
+      { label: "Vendors", href: "/staff/inventory", status: "alert" as const, badge: "3" },
+    ],
   },
 ];
 
-const maintenance = [
-  { asset: "Washer 12", status: "Offline", action: "Fill valve swap 19:00" },
-  { asset: "Dryer 5", status: "Watch", action: "Bearing vibration trending" },
-  { asset: "Folding arm", status: "Healthy", action: "Auto-cal passed" },
+const alertChips = [
+  { id: "langoustine", label: "Langoustine below par", tone: "warning" as const },
+  { id: "spruce", label: "Spruce syrup 18h lead", tone: "info" as const },
+];
+
+const noteFeed = [
+  {
+    id: "note-1",
+    author: "Ken",
+    body: "Nord delivery drifted +22 minutes. Logged temp at 1.6°C.",
+    timestamp: "09:45",
+    tags: ["vendor", "cold-chain"],
+  },
+  {
+    id: "note-2",
+    author: "Aya",
+    body: "Coal crumble batch yielded 8% more dust. Adjusting sieve.",
+    timestamp: "10:20",
+    tags: ["prep"],
+  },
+  {
+    id: "note-3",
+    author: "Tom",
+    body: "FoH flagged dairy-free glaze shortage — rerouting to prep queue.",
+    timestamp: "11:10",
+    tags: ["allergen"],
+  },
+];
+
+const insightItems = [
+  {
+    id: "insight-1",
+    title: "Shellfish Risk",
+    detail: "Langoustine buffer hits zero in 18h. Suggest pulling 2kg from reserve vendor.",
+    severity: "critical" as const,
+    actionLabel: "Patch Order",
+  },
+  {
+    id: "insight-2",
+    title: "Spruce Tip Trend",
+    detail: "Usage up 14% week-over-week due to Prelude glaze. Confirm next harvest slot.",
+    severity: "warning" as const,
+  },
+  {
+    id: "insight-3",
+    title: "Waste",
+    detail: "Trim loss dipped to 1.1% after new cryo batch. Keep monitoring.",
+    severity: "info" as const,
+  },
+];
+
+const vendors = [
+  {
+    name: "Norð Fisheries",
+    punctuality: 9.2,
+    drift: 1.8,
+    reliability: 9.0,
+    notes: "Requesting heads-up before Friday storms.",
+  },
+  {
+    name: "Snow Ridge Dairy",
+    punctuality: 8.6,
+    drift: -0.4,
+    reliability: 8.9,
+    notes: "Dairy-free butter alt ready next week.",
+  },
+  {
+    name: "Calm Forest Co.",
+    punctuality: 7.8,
+    drift: 2.2,
+    reliability: 8.0,
+    notes: "Spruce syrup limited — ration this week.",
+  },
+];
+
+const hintChips = ["Langoustine", "Dairy-free glaze", "Waste < 2%", "Vendor drift"];
+
+const storageMetrics = [
+  {
+    id: "freezer",
+    title: "Freezer Orbit",
+    level: 68,
+    eta: "Stable",
+    note: "Langoustine occupying 42%",
+  },
+  {
+    id: "prep",
+    title: "Prep Lab",
+    level: 54,
+    eta: "Restock 3h",
+    note: "Spruce glaze runs tonight",
+  },
+  {
+    id: "linen",
+    title: "Linen Vault",
+    level: 82,
+    eta: "Healthy",
+    note: "Next delivery Friday",
+  },
 ];
 
 export default function InventoryPage() {
   return (
-    <div className="flex w-full flex-col items-center gap-6 text-white">
-      <GlassPanel title="Inventory Orbit">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-white/70">
-            Monitor supplies, machine kits, and maintenance pulses from a single
-            observatory view.
-          </p>
-          <button className="rounded-full border border-accent/40 px-6 py-2 text-sm text-white hover:border-accent">
-            Export Snapshot
-          </button>
-        </div>
-      </GlassPanel>
-
-      <GlassPanel title="Chemistry + Linen Levels" delay={0.1}>
-        <div className="mt-4 grid gap-4">
-          {inventory.map((item) => (
-            <article
-              key={item.item}
-              className="grid gap-4 rounded-2xl border border-white/10 bg-white/5 p-4 sm:grid-cols-4"
-            >
-              <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-white/50">
-                  Item
-                </p>
-                <p className="text-lg font-light text-white">{item.item}</p>
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-white/50">
-                  Level
-                </p>
-                <p
-                  className={`text-lg font-semibold ${
-                    item.level < 40 ? "text-[#FF5E7A]" : "text-white"
-                  }`}
-                >
-                  {item.level}%
-                </p>
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-white/50">
-                  Refill ETA
-                </p>
-                <p className="text-white/80">{item.eta}</p>
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-white/50">
-                  Notes
-                </p>
-                <p className="text-white/70">{item.note}</p>
-              </div>
-            </article>
-          ))}
-        </div>
-      </GlassPanel>
-
-      <div className="grid w-full max-w-5xl gap-6 lg:grid-cols-2">
-        <GlassPanel title="Maintenance Signals" delay={0.15}>
-          <ul className="space-y-3 text-sm text-white/80">
-            {maintenance.map((asset) => (
-              <li
-                key={asset.asset}
-                className="rounded-2xl border border-white/10 bg-white/5 p-4"
-              >
-                <div className="flex items-center justify-between">
-                  <p className="text-white text-lg">{asset.asset}</p>
-                  <span className="text-xs uppercase tracking-[0.3em] text-accent">
-                    {asset.status}
-                  </span>
-                </div>
-                <p>{asset.action}</p>
-              </li>
-            ))}
-          </ul>
-        </GlassPanel>
-
-        <GlassPanel title="Alerts" delay={0.2}>
-          <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-[#120f2b] to-[#05030c] p-6 text-sm text-white/80 shadow-inner">
-            <p>
-              Detergent pods projected to under 20% by 04:00. Confirm reroute or
-              accept rush delivery slot.
-            </p>
-            <div className="mt-4 flex gap-2">
-              <button className="rounded-full bg-accent px-4 py-2 text-sm text-white">
-                Accept Rush
-              </button>
-              <button className="rounded-full border border-white/20 px-4 py-2 text-sm">
-                Reroute
-              </button>
-            </div>
+    <div className="flex w-full flex-col gap-6 text-white">
+      <InventoryTopBar title="InventoryOS" timestamp="Synced 14:32" alerts={alertChips} />
+      <div className="flex flex-col gap-6 xl:flex-row">
+        <InventorySidebar sections={sidebarSections} footerText="Auto-syncs every hour via Supabase functions." />
+        <div className="flex-1 space-y-6">
+          <InventorySearchBar dataHints={hintChips} />
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,0.9fr)]">
+            <InventoryNotesPanel notes={noteFeed} />
+            <AIInsightPanel insights={insightItems} />
           </div>
-        </GlassPanel>
+          <div className="grid gap-6 lg:grid-cols-3">
+            {storageMetrics.map((metric) => (
+              <section
+                key={metric.id}
+                className="rounded-3xl border border-white/10 bg-white/5 p-4 shadow-[0_20px_60px_rgba(0,0,0,0.45)]"
+              >
+                <p className="text-xs uppercase tracking-[0.4em] text-white/40">{metric.title}</p>
+                <p className="mt-2 text-3xl font-light">{metric.level}%</p>
+                <p className="text-xs text-white/60">{metric.eta}</p>
+                <p className="mt-3 text-sm text-white/70">{metric.note}</p>
+              </section>
+            ))}
+          </div>
+          <section className="rounded-3xl border border-dashed border-white/20 bg-white/0 p-5 text-sm text-white/60">
+            <p>
+              Need the granular dashboard? Jump into{" "}
+              <span className="text-white">Food InventoryOS</span> for live Supabase data, auto-replenish rituals,
+              and vendor telemetry.
+            </p>
+          </section>
+        </div>
+        <div className="w-full space-y-6 xl:max-w-sm">
+          <VendorInsightPanel vendors={vendors} />
+          <section className="rounded-3xl border border-white/10 bg-gradient-to-br from-[#14182c] to-[#05070f] p-5 text-sm text-white/70 shadow-[0_20px_60px_rgba(0,0,0,0.45)]">
+            <p className="text-xs uppercase tracking-[0.4em] text-white/40">Next Checks</p>
+            <ul className="mt-3 space-y-2">
+              <li>· Confirm langoustine reserve pull (14:00)</li>
+              <li>· Update allergen badges after Prelude push</li>
+              <li>· Archive Nord drift log for owner review</li>
+            </ul>
+          </section>
+        </div>
       </div>
     </div>
   );

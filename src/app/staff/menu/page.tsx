@@ -1,124 +1,176 @@
-import { GlassPanel } from "@/components/glass-panel";
+"use client";
 
-const specials = [
-  {
-    title: "Citrus Cloud",
-    status: "Draft",
-    allergens: "citrus, dairy",
-    owner: "Ken",
-  },
-  {
-    title: "Night Bloom Rinse",
-    status: "Scheduled",
-    allergens: "herbal",
-    owner: "Aya",
-  },
-];
+import type { ComponentProps } from "react";
+import { MenuBuilderWorkspace } from "@/components/menu/MenuBuilderWorkspace";
 
-const automations = [
-  {
-    trigger: "VIP pickup scheduled",
-    action: "Inject concierge reminder copy",
-    status: "Active",
+const workspaceState: ComponentProps<typeof MenuBuilderWorkspace> = {
+  dishes: [
+    {
+      id: "aurora-ridge",
+      name: "Aurora Ridge Langoustine",
+      category: "Flight B · Course 4",
+      status: "Testing",
+      updated_at: "2024-11-12T18:00:00Z",
+    },
+    {
+      id: "ember-root",
+      name: "Ember Root Parfait",
+      category: "Vegetal",
+      status: "R&D",
+      updated_at: "2024-11-11T11:15:00Z",
+    },
+    {
+      id: "icefield",
+      name: "Icefield Bloom",
+      category: "Dessert",
+      status: "Trials",
+      updated_at: "2024-11-10T22:30:00Z",
+    },
+  ],
+  activeDishId: "aurora-ridge",
+  components: [
+    {
+      id: "spruce-glaze",
+      name: "Smoked Spruce Glaze",
+      technique: "Slow reduction",
+      estimatedTime: "45m",
+    },
+    {
+      id: "fire-pearl",
+      name: "Fire Pearl Crumble",
+      technique: "Cryo puff",
+      estimatedTime: "30m",
+    },
+    {
+      id: "langoustine-butter",
+      name: "Langoustine Butter",
+      technique: "Brown butter baste",
+      estimatedTime: "25m",
+    },
+  ],
+  ingredients: [
+    {
+      id: "langoustine",
+      name: "Nord Langoustine",
+      vendor: "Norð Fisheries",
+      unit: "kg",
+      cost: 48.5,
+      aiEstimate: 51.2,
+      allergenTags: ["shellfish"],
+    },
+    {
+      id: "spruce",
+      name: "Spruce Tip Syrup",
+      vendor: "Calm Forest Co.",
+      unit: "L",
+      cost: 18.75,
+      aiEstimate: 19.1,
+      allergenTags: [],
+    },
+    {
+      id: "coal-salt",
+      name: "Coal Salt",
+      vendor: "House Blend",
+      unit: "kg",
+      cost: 6.2,
+      aiEstimate: 6.4,
+      allergenTags: [],
+    },
+    {
+      id: "butter",
+      name: "Browned Jersey Butter",
+      vendor: "Snow Ridge Dairy",
+      unit: "kg",
+      cost: 9.4,
+      aiEstimate: 9.5,
+      allergenTags: ["dairy"],
+    },
+  ],
+  costMetrics: [
+    { label: "COGS", value: "31.4%", trend: "down" },
+    { label: "Labour Band", value: "22.1%", trend: "flat" },
+    { label: "Prep Hours", value: "11.5h", trend: "up" },
+  ],
+  allergens: ["Shellfish", "Dairy", "Citrus Oil", "Pine"],
+  versionHistory: [
+    {
+      id: "v9",
+      label: "Aurora v9",
+      date: "Nov 12",
+      notes: "Reduced glaze sweetness + added char.",
+      deltaCost: "-$0.42",
+    },
+    {
+      id: "v8",
+      label: "Aurora v8",
+      date: "Nov 9",
+      notes: "Introduced coal salt chip for texture.",
+    },
+    {
+      id: "v7",
+      label: "Aurora v7",
+      date: "Nov 5",
+      notes: "Langoustine tail hydrated in spruce oil.",
+    },
+  ],
+  platingAssets: [
+    {
+      id: "shot-1",
+      photoUrl:
+        "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=600&q=80",
+      annotations: "Keep glaze anchored at 3 o'clock · brighten micro herbs.",
+    },
+    {
+      id: "shot-2",
+      photoUrl:
+        "https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?auto=format&fit=crop&w=600&q=80",
+      annotations: "Coal crumble hugging the shell – avoid covering pearl.",
+    },
+  ],
+  chefChat: [
+    {
+      id: "chat-1",
+      author: "Chef Orion",
+      content: "Need a brighter hit on the glaze — try citrus vapour?",
+      timestamp: "09:42",
+    },
+    {
+      id: "chat-2",
+      author: "Aya",
+      content: "Reducing shiso micro batch for tonight. 30 covers ready.",
+      timestamp: "10:05",
+      outgoing: true,
+    },
+    {
+      id: "chat-3",
+      author: "Ken",
+      content: "Confirming langoustine delivery ETA 14:00.",
+      timestamp: "10:18",
+    },
+  ],
+  prepSummary: {
+    covers: 46,
+    batches: [
+      { label: "Spruce glaze", qty: "2.5L", due: "15:30" },
+      { label: "Coal crumble", qty: "1 tray", due: "16:45" },
+      { label: "Langoustine tails", qty: "48 pcs", due: "17:10" },
+    ],
+    alerts: ["Langoustine lead time down to 12h", "Need back-up dairy-free glaze"],
   },
-  {
-    trigger: "Menu item flagged for allergen",
-    action: "Surface warning chip on guest site",
-    status: "Testing",
-  },
-];
+};
 
-export default function MenuPage() {
+export default function StaffMenuPage() {
   return (
-    <div className="flex w-full flex-col items-center gap-6 text-white">
-      <GlassPanel title="Menu Builder Orbit">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-white/70">
-            Craft nightly specials and Cortex prompts before they descend to the
-            guest site.
-          </p>
-          <button className="rounded-full border border-accent/40 px-6 py-2 text-sm text-white hover:border-accent">
-            New Special
-          </button>
-        </div>
-      </GlassPanel>
-
-      <div className="grid w-full max-w-5xl gap-6 lg:grid-cols-[2fr_1fr]">
-        <GlassPanel title="Active Drafts" delay={0.1}>
-          <div className="space-y-4">
-            {specials.map((special) => (
-              <article
-                key={special.title}
-                className="rounded-2xl border border-white/10 bg-white/5 p-4"
-              >
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <h3 className="text-2xl font-light text-white">
-                      {special.title}
-                    </h3>
-                    <p className="text-sm text-white/60">
-                      Allergens: {special.allergens}
-                    </p>
-                  </div>
-                  <span className="rounded-full border border-white/10 px-3 py-1 text-xs uppercase tracking-[0.3em] text-white/70">
-                    {special.status}
-                  </span>
-                </div>
-                <p className="mt-3 text-sm text-white/70">
-                  Owner: {special.owner}
-                </p>
-              </article>
-            ))}
-          </div>
-        </GlassPanel>
-
-        <GlassPanel title="Allergen Controls" delay={0.15}>
-          <p className="text-sm text-white/70">
-            Auto-surface allergen badges on guest panels when citrus or nuts are
-            detected.
-          </p>
-          <label className="mt-4 flex items-center gap-3 text-sm text-white">
-            <input type="checkbox" defaultChecked className="h-4 w-4 rounded border-white/30 bg-transparent" />
-            Auto-tag exposed items
-          </label>
-        </GlassPanel>
+    <div className="flex w-full flex-col gap-6">
+      <div className="rounded-[32px] border border-white/10 bg-white/5 p-6 text-white shadow-[0_30px_90px_rgba(0,0,0,0.55)]">
+        <p className="text-xs uppercase tracking-[0.45em] text-white/50">Staff · Menu Builder</p>
+        <h1 className="mt-2 text-3xl font-light tracking-[0.25em]">Live Development Queue</h1>
+        <p className="mt-1 text-sm text-white/60">
+          Linked to Supabase drafts, plating guides, and prep engine. Switch dishes to push updates
+          to the guest concierge once approved.
+        </p>
       </div>
-
-      <div className="grid w-full max-w-5xl gap-6 lg:grid-cols-2">
-        <GlassPanel title="Prompt Automations" delay={0.18}>
-          <ul className="space-y-4 text-sm text-white/80">
-            {automations.map((automation) => (
-              <li
-                key={automation.trigger}
-                className="rounded-2xl border border-white/10 bg-white/5 p-4"
-              >
-                <p className="text-white">{automation.trigger}</p>
-                <p className="text-white/60">{automation.action}</p>
-                <span className="text-xs uppercase tracking-[0.3em] text-accent">
-                  {automation.status}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </GlassPanel>
-
-        <GlassPanel title="Guest Preview" delay={0.22}>
-          <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-[#0f1729] to-[#020409] p-6 text-sm text-white/80 shadow-inner">
-            <p className="text-xs uppercase tracking-[0.3em] text-accent">
-              Featured tonight
-            </p>
-            <h3 className="mt-2 text-2xl font-light text-white">
-              Citrus Cloud
-            </h3>
-            <p className="text-white/70">
-              Silk-press citrus rinse with frost foam finish.
-            </p>
-            <div className="mt-4 inline-flex rounded-full border border-accent/40 px-3 py-1 text-xs uppercase tracking-[0.3em] text-accent">
-              Contains citrus
-            </div>
-          </div>
-        </GlassPanel>
-      </div>
+      <MenuBuilderWorkspace {...workspaceState} />
     </div>
   );
 }
