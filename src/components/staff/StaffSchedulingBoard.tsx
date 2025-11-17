@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 
 type FocusTag = "service" | "prep" | "guest" | "ops";
 
@@ -20,6 +20,8 @@ type Task = {
   due: string;
   focus: FocusTag;
 };
+
+type RequestType = "shift_change" | "reservation_add" | "task";
 
 const SHIFT_COLUMNS: Array<{ title: string; items: TimelineCard[] }> = [
   {
@@ -160,19 +162,58 @@ const FOCUS_COPY: Record<FocusTag, { label: string; color: string }> = {
   ops: { label: "Ops", color: "bg-white/20 text-white" },
 };
 
+const REQUEST_COPY: Record<RequestType, { label: string; placeholder: string }> = {
+  shift_change: {
+    label: "Shift change request",
+    placeholder: "Explain the swap or coverage you need…",
+  },
+  reservation_add: {
+    label: "Reservation / guest note",
+    placeholder: "Add phone call info, dietary notes, or timeline shifts…",
+  },
+  task: {
+    label: "Scheduling task",
+    placeholder: "Describe prep, cleaning, or inventory work that needs to be scheduled…",
+  },
+};
+
 export function StaffSchedulingBoard() {
   const [selectedReservationId, setSelectedReservationId] = useState(
     RESERVATION_DECK[0]?.id ?? null,
   );
-  const [completedTasks, setCompletedTasks] = useState<Record<string, boolean>>({});
+  const [requestForm, setRequestForm] = useState<{
+    type: RequestType;
+    targetLabel: string;
+    details: string;
+  }>({
+    type: "shift_change",
+    targetLabel: "",
+    details: "",
+  });
+  const [requestStatus, setRequestStatus] = useState<"idle" | "submitting" | "success">("idle");
 
   const selectedReservation = useMemo(
     () => RESERVATION_DECK.find((card) => card.id === selectedReservationId),
     [selectedReservationId],
   );
 
-  function toggleTask(id: string) {
-    setCompletedTasks((prev) => ({ ...prev, [id]: !prev[id] }));
+  function prefillRequest(type: RequestType, label: string) {
+    setRequestStatus("idle");
+    setRequestForm({
+      type,
+      targetLabel: label,
+      details: "",
+    });
+  }
+
+  function handleRequestSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!requestForm.details.trim()) return;
+    setRequestStatus("submitting");
+    window.setTimeout(() => {
+      setRequestStatus("success");
+      setRequestForm((prev) => ({ ...prev, details: "" }));
+    }, 600);
   }
 
   return (
@@ -188,6 +229,8 @@ export function StaffSchedulingBoard() {
           <FocusChip label="Tasks" value="4 reminders" tone="accent" />
         </div>
       </header>
+
+      <ViewOnlyBanner />
 
       <div className="grid gap-6 xl:grid-cols-[3fr_minmax(320px,1fr)]">
         <div className="space-y-6">
@@ -214,6 +257,13 @@ export function StaffSchedulingBoard() {
                         <p className="mt-2 text-base font-light text-white">{item.title}</p>
                         <p className="text-sm text-white/70">{item.meta}</p>
                         <p className="mt-2 text-xs text-white/60">{item.detail}</p>
+                        <button
+                          type="button"
+                          onClick={() => prefillRequest("shift_change", `${item.title} · ${item.time}`)}
+                          className="mt-3 w-full rounded-2xl border border-white/20 px-3 py-2 text-xs uppercase tracking-[0.35em] text-white/70 transition hover:border-white/60"
+                        >
+                          Request change
+                        </button>
                       </article>
                     ))}
                   </div>
@@ -230,9 +280,10 @@ export function StaffSchedulingBoard() {
               </div>
               <button
                 type="button"
+                onClick={() => prefillRequest("reservation_add", "General request")}
                 className="rounded-full border border-white/20 px-4 py-2 text-xs uppercase tracking-[0.4em] text-white/80 hover:border-white/60"
               >
-                Add Block
+                Request update
               </button>
             </div>
             <div className="mt-4 flex flex-wrap gap-4">
@@ -258,6 +309,15 @@ export function StaffSchedulingBoard() {
                 <p className="text-xs uppercase tracking-[0.4em] text-white/50">Focus</p>
                 <p className="mt-2 text-lg text-white">{selectedReservation.detail}</p>
                 <p className="text-sm text-white/70">{selectedReservation.meta}</p>
+                <button
+                  type="button"
+                  onClick={() =>
+                    prefillRequest("reservation_add", `${selectedReservation.title} · ${selectedReservation.time}`)
+                  }
+                  className="mt-3 w-full rounded-2xl border border-white/20 px-3 py-2 text-xs uppercase tracking-[0.35em] text-white/70 transition hover:border-white/60"
+                >
+                  Request change
+                </button>
               </div>
             )}
           </section>
@@ -268,29 +328,22 @@ export function StaffSchedulingBoard() {
             <header className="flex items-center justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.4em] text-white/50">Reminders</p>
-                <p className="text-sm text-white/70">Tap to mark complete.</p>
+                <p className="text-sm text-white/70">View-only · route changes below.</p>
               </div>
               <button
                 type="button"
+                onClick={() => prefillRequest("task", "New reminder")}
                 className="rounded-full border border-white/20 px-3 py-1 text-xs uppercase tracking-[0.4em] text-white/70 hover:border-white/60"
               >
-                New
+                Submit request
               </button>
             </header>
             <ul className="mt-4 space-y-3">
               {TASKS.map((task) => (
                 <li
                   key={task.id}
-                  className="flex items-start gap-3 rounded-2xl border border-white/10 bg-black/30 p-4"
+                  className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-black/30 p-4"
                 >
-                  <button
-                    type="button"
-                    onClick={() => toggleTask(task.id)}
-                    aria-label="Toggle task"
-                    className={`mt-1 h-4 w-4 rounded-full border ${
-                      completedTasks[task.id] ? "border-white bg-white" : "border-white/40"
-                    }`}
-                  />
                   <div className="flex-1">
                     <div className="flex items-center justify-between text-xs uppercase tracking-[0.35em] text-white/50">
                       <span>{task.due}</span>
@@ -298,15 +351,16 @@ export function StaffSchedulingBoard() {
                         {FOCUS_COPY[task.focus].label}
                       </span>
                     </div>
-                    <p
-                      className={`mt-1 text-sm text-white ${
-                        completedTasks[task.id] ? "line-through opacity-50" : ""
-                      }`}
-                    >
-                      {task.label}
-                    </p>
+                    <p className="mt-1 text-sm text-white">{task.label}</p>
                     <p className="text-xs text-white/60">{task.detail}</p>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => prefillRequest("task", task.label)}
+                    className="rounded-full border border-white/20 px-3 py-1 text-xs uppercase tracking-[0.35em] text-white/70 transition hover:border-white/60"
+                  >
+                    Request adjustment
+                  </button>
                 </li>
               ))}
             </ul>
@@ -332,6 +386,114 @@ export function StaffSchedulingBoard() {
           </section>
         </aside>
       </div>
+
+      <RequestPanel
+        form={requestForm}
+        status={requestStatus}
+        onChange={setRequestForm}
+        onSubmit={handleRequestSubmit}
+      />
+    </section>
+  );
+}
+
+function ViewOnlyBanner() {
+  return (
+    <div className="rounded-[28px] border border-white/15 bg-black/30 px-5 py-4 text-sm text-white/70">
+      <p className="uppercase tracking-[0.45em] text-white/40">Mode · View Only</p>
+      <p className="mt-1">
+        Owners control the master schedule. Review the live plan here and use the request panel below for
+        shift swaps, reservation notes, or scheduling tasks tied to you.
+      </p>
+    </div>
+  );
+}
+
+function RequestPanel({
+  form,
+  status,
+  onChange,
+  onSubmit,
+}: {
+  form: { type: RequestType; targetLabel: string; details: string };
+  status: "idle" | "submitting" | "success";
+  onChange: (form: { type: RequestType; targetLabel: string; details: string }) => void;
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+}) {
+  const meta = REQUEST_COPY[form.type];
+  const disabled = !form.details.trim() || status === "submitting";
+
+  function updateField(field: "targetLabel" | "details", value: string) {
+    onChange({ ...form, [field]: value });
+  }
+
+  function updateType(type: RequestType) {
+    onChange({ ...form, type });
+  }
+
+  return (
+    <section className="rounded-[36px] border border-white/10 bg-white/5 p-6 text-white shadow-[0_40px_140px_rgba(0,0,0,0.55)]">
+      <header className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-xs uppercase tracking-[0.5em] text-white/50">Request changes</p>
+          <h2 className="text-3xl font-light tracking-[0.25em]">Forward to owners</h2>
+        </div>
+        {status === "success" && (
+          <span className="rounded-full border border-emerald-400/40 bg-emerald-400/10 px-4 py-1 text-xs uppercase tracking-[0.4em] text-emerald-200">
+            Sent
+          </span>
+        )}
+      </header>
+
+      <div className="mt-4 flex flex-wrap gap-2">
+        {(["shift_change", "reservation_add", "task"] as RequestType[]).map((type) => (
+          <button
+            key={type}
+            type="button"
+            onClick={() => updateType(type)}
+            className={`rounded-full border px-4 py-1 text-xs uppercase tracking-[0.4em] transition ${
+              form.type === type ? "border-white/70 bg-white/15" : "border-white/15 text-white/60"
+            }`}
+          >
+            {REQUEST_COPY[type].label}
+          </button>
+        ))}
+      </div>
+
+      <form className="mt-5 space-y-4" onSubmit={onSubmit}>
+        <label className="flex flex-col gap-2 text-xs uppercase tracking-[0.4em] text-white/50">
+          Target block or context
+          <input
+            type="text"
+            value={form.targetLabel}
+            onChange={(event) => updateField("targetLabel", event.target.value)}
+            placeholder="e.g., Pastry close Friday"
+            className="rounded-2xl border border-white/15 bg-black/30 px-4 py-3 text-sm text-white placeholder:text-white/30 focus:border-white/60 focus:outline-none"
+          />
+        </label>
+        <label className="flex flex-col gap-2 text-xs uppercase tracking-[0.4em] text-white/50">
+          Details
+          <textarea
+            value={form.details}
+            onChange={(event) => updateField("details", event.target.value)}
+            placeholder={meta.placeholder}
+            rows={4}
+            className="rounded-2xl border border-white/15 bg-black/30 px-4 py-3 text-sm text-white placeholder:text-white/30 focus:border-white/60 focus:outline-none"
+          />
+        </label>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-xs uppercase tracking-[0.4em] text-white/40">
+            Routes to owners · auto logged in schedule queue
+          </p>
+          <button
+            type="submit"
+            disabled={disabled}
+            className="rounded-full border border-white/40 px-6 py-2 text-xs uppercase tracking-[0.4em] text-white transition hover:border-white/80 disabled:opacity-40"
+          >
+            {status === "submitting" ? "Sending…" : "Submit request"}
+          </button>
+        </div>
+      </form>
     </section>
   );
 }

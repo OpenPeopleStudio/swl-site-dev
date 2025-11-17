@@ -94,7 +94,8 @@ export default async function CustomerEventsPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <main className="customer-shell min-h-screen text-white" data-shell="customer">
+      <div className="customer-shell__inner space-y-8">
       <header className="space-y-2 text-center">
         <p className="text-xs uppercase tracking-[0.4em] text-white/40">
           Snow White Laundry
@@ -225,7 +226,8 @@ export default async function CustomerEventsPage() {
           </div>
         )}
       </section>
-    </div>
+      </div>
+    </main>
   );
 }
 

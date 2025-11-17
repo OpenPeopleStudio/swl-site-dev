@@ -26,6 +26,7 @@ export default function StaffLayout({ children }: { children: ReactNode }) {
   );
   const [navOpen, setNavOpen] = useState(false);
   const activeLabel = navItems.find((item) => item.href === pathname)?.label ?? "Navigate";
+  const drawerId = "staff-nav-drawer";
 
   function handleBootComplete() {
     if (typeof window !== "undefined") {
@@ -42,8 +43,9 @@ export default function StaffLayout({ children }: { children: ReactNode }) {
     <>
       {bootState === "show" && <BootSequence onFinish={handleBootComplete} />}
       <main
-        className="relative min-h-screen overflow-hidden bg-space-gradient text-white"
+        className="staff-shell relative min-h-screen overflow-hidden bg-space-gradient text-white"
         aria-hidden={bootState === "show"}
+        data-shell="staff"
       >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,#1b1f33,transparent_70%)]" />
 
@@ -54,7 +56,7 @@ export default function StaffLayout({ children }: { children: ReactNode }) {
         transition={{ repeat: Infinity, duration: 120, ease: "linear" }}
       />
 
-      <div className="relative z-10 flex min-h-screen flex-col items-center gap-8 px-4 py-8 sm:px-8">
+      <div className="staff-shell__inner relative z-10 flex min-h-screen flex-col items-center gap-8 px-4 py-8 sm:px-8">
         <header className="glass-surface panel-outline w-full max-w-5xl rounded-[32px] border border-white/10 bg-white/5 px-6 py-5 backdrop-blur-xl">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
@@ -74,6 +76,8 @@ export default function StaffLayout({ children }: { children: ReactNode }) {
               type="button"
               onClick={() => setNavOpen((prev) => !prev)}
               className="flex w-full items-center justify-between rounded-2xl border border-white/15 bg-white/5 px-4 py-2 text-left text-xs uppercase tracking-[0.35em] text-white/70 transition hover:border-white/40 sm:hidden"
+              aria-expanded={navOpen}
+              aria-controls={drawerId}
             >
               {activeLabel}
               <span
@@ -84,8 +88,11 @@ export default function StaffLayout({ children }: { children: ReactNode }) {
               </span>
             </button>
             <div
-              className={`grid gap-3 overflow-hidden pb-2 transition-[grid-template-rows] duration-300 sm:flex sm:flex-wrap sm:overflow-visible sm:pb-0 ${
-                navOpen ? "grid-rows-[1fr] pt-3" : "grid-rows-[0fr] sm:grid-rows-none sm:pt-0"
+              id={drawerId}
+              className={`overflow-hidden pb-2 transition-[max-height,opacity] duration-300 sm:max-h-none sm:overflow-visible sm:pb-0 ${
+                navOpen
+                  ? "max-h-[480px] opacity-100 pt-3"
+                  : "max-h-0 opacity-0 sm:max-h-none sm:opacity-100 sm:pt-0"
               }`}
             >
               <div className="space-y-3 sm:flex sm:flex-wrap sm:space-y-0 sm:gap-3">

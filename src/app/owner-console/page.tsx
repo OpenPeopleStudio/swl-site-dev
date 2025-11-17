@@ -31,8 +31,11 @@ export default async function OwnerConsolePage() {
   await ensureOwner();
 
   return (
-    <main className="min-h-screen bg-[#010206] px-4 py-10 text-white sm:px-8">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
+    <main
+      className="owner-shell min-h-screen bg-[#010206] text-white"
+      data-shell="owner"
+    >
+      <div className="owner-shell__inner">
         <header className="space-y-2">
           <p className="text-xs uppercase tracking-[0.5em] text-white/40">Owner Console</p>
           <h1 className="text-4xl font-light tracking-[0.25em]">
