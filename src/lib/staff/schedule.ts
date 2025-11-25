@@ -81,9 +81,11 @@ export const listStaffDirectory = cache(async (): Promise<StaffOption[]> => {
   }
 
   const latestByStaff = new Map<string, StaffScheduleRow>();
-  (scheduleResponse.data ?? []).forEach((row) => {
-    if (!row.staff_id || latestByStaff.has(row.staff_id)) return;
-    latestByStaff.set(row.staff_id, row as StaffScheduleRow);
+  ((scheduleResponse.data ?? []) as unknown[]).forEach((row) => {
+    if (!isStaffScheduleRow(row) || !row.staff_id || latestByStaff.has(row.staff_id)) {
+      return;
+    }
+    latestByStaff.set(row.staff_id, row);
   });
 
   const metaByStaff = new Map<string, StaffScheduleMetaRow>();
@@ -182,9 +184,8 @@ export async function fetchScheduleForDate(args: ScheduleLoadArgs): Promise<Sche
     };
   }
 
-  const assignments = (data ?? [])
-    .map((row) => mapRowToAssignment(row as StaffScheduleRow))
-    .filter(Boolean) as ScheduleAssignment[];
+  const scheduleRows = ((data ?? []) as unknown[]).filter(isStaffScheduleRow);
+  const assignments = scheduleRows.map(mapRowToAssignment).filter(Boolean) as ScheduleAssignment[];
 
   const focusOptions = assignments.length
     ? deriveFocusOptions(assignments)
@@ -341,5 +342,13 @@ function deriveFocusFromRole(role?: string | null): ShiftFocus | null {
   if (normalized.includes("ops") || normalized.includes("admin") || normalized.includes("utility")) return "ops";
   if (normalized.includes("service") || normalized.includes("line") || normalized.includes("server")) return "service";
   return null;
+}
+
+function isStaffScheduleRow(row: unknown): row is StaffScheduleRow {
+  if (!row || typeof row !== "object") {
+    return false;
+  }
+  const candidate = row as Partial<StaffScheduleRow>;
+  return typeof candidate.id === "string";
 }
 

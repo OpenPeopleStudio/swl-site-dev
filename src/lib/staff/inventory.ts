@@ -40,6 +40,7 @@ export type FoodInventoryItem = {
   vendor_id?: string | null;
   cost_per_unit?: number | null;
   last_invoice_cost?: number | null;
+  last_counted_at?: string | null;
   updated_at?: string | null;
 };
 
@@ -48,6 +49,7 @@ export type AlcoholInventoryItem = {
   name: string;
   category?: string | null;
   storage_zone?: string | null;
+  unit_size?: string | null;
   bottle_count?: number | null;
   open_bottle_volume?: number | null;
   par_level?: number | null;

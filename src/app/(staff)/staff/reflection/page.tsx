@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { SiteShell } from "@/components/design/SiteShell";
 import { PageHeader } from "@/components/design/PageHeader";
 import { getSupabaseAdmin } from "@/lib/shared/supabase";
@@ -177,9 +178,24 @@ export default async function ReflectionPage({ searchParams = {} }: ReflectionPa
         <p className="mt-4 text-base text-white/70 md:text-lg lg:max-w-3xl">
           Follow the breadcrumbs of intention. Scan shifts, tag themes, and keep the restaurant&rsquo;s memory in orbit.
         </p>
-        <ReflectionPageClient reflections={reflections} prompts={prompts} initialFilters={initialFilters} />
+        <Suspense fallback={<ReflectionPageFallback />}>
+          <ReflectionPageClient reflections={reflections} prompts={prompts} initialFilters={initialFilters} />
+        </Suspense>
       </div>
     </SiteShell>
+  );
+}
+
+function ReflectionPageFallback() {
+  return (
+    <div className="mt-8 space-y-6">
+      <div className="h-10 w-full animate-pulse rounded-xl bg-white/5" />
+      <div className="h-[420px] w-full animate-pulse rounded-3xl bg-white/5" />
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="h-48 animate-pulse rounded-3xl bg-white/5" />
+        <div className="h-48 animate-pulse rounded-3xl bg-white/5" />
+      </div>
+    </div>
   );
 }
 

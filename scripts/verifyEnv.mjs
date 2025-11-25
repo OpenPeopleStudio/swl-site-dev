@@ -10,7 +10,8 @@ const rootDir = join(__dirname, "..");
 try {
   const envLocal = readFileSync(join(rootDir, ".env.local"), "utf-8");
   for (const line of envLocal.split("\n")) {
-    const match = line.match(/^([^=:#]+)=(.*)$/);
+    const normalizedLine = line.replace(/\r$/, "");
+    const match = normalizedLine.match(/^([^=:#]+)=(.*)$/);
     if (match && !match[1].startsWith("#")) {
       const key = match[1].trim();
       const value = match[2].trim().replace(/^["']|["']$/g, "");
