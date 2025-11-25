@@ -37,11 +37,11 @@ export function WorktreeDashboard({ worktrees }: WorktreeDashboardProps) {
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3 sm:space-y-4">
       {worktrees.map((worktree) => (
         <div
           key={worktree.name}
-          className={`flex items-center gap-4 text-xs border-b border-white/5 pb-2 last:border-0 ${
+          className={`flex items-center gap-5 sm:gap-6 text-xs sm:text-sm border-b border-white/5 pb-3 sm:pb-4 last:border-0 ${
             worktree.isStale ? "opacity-50" : ""
           }`}
         >

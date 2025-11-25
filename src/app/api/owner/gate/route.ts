@@ -6,6 +6,7 @@ import {
   serializeSession,
   type SessionPayload,
 } from "@/lib/shared/session";
+import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
 
 async function logGateAuth(
   supabase: ReturnType<typeof getSupabaseAdmin>,
@@ -45,6 +46,77 @@ function getClientInfo(request: Request): { ip_address?: string; user_agent?: st
     undefined;
   const user_agent = headers.get("user-agent") || undefined;
   return { ip_address, user_agent };
+}
+
+// Seed users configuration - matches check-user route
+const SEEDED_USERS = [
+  {
+    email: "tom@openpeople.ai",
+    passwordEnv: "GATE_TOM_PASSWORD",
+    fallbackPassword: "opendeck",
+    metadata: { role: "owner" },
+  },
+  {
+    email: "tom@snowwhitelaundry.com",
+    passwordEnv: "GATE_TOM_STAFF_PASSWORD",
+    fallbackPassword: "opendeck",
+    metadata: { role: "staff" },
+  },
+  {
+    email: "toml_ne@icloud.com",
+    passwordEnv: "GATE_TOML_PASSWORD",
+    fallbackPassword: "opendeck",
+    metadata: { role: "customer" },
+  },
+] as const;
+
+async function findUserByEmail(client: SupabaseClient, email: string): Promise<User | null> {
+  const { data, error } = await client.auth.admin.listUsers({ page: 1, perPage: 500 });
+  if (error) throw error;
+  const lower = email.toLowerCase();
+  const match = data.users.find((user) => user.email?.toLowerCase() === lower) ?? null;
+  return match;
+}
+
+async function ensureSeedUsers(client: SupabaseClient) {
+  await Promise.all(
+    SEEDED_USERS.map(async ({ email, passwordEnv, fallbackPassword, metadata }) => {
+      const password = process.env[passwordEnv] ?? fallbackPassword;
+      if (!password) return;
+      const existing = await findUserByEmail(client, email).catch((error) => {
+        console.error("Failed to lookup user", email, error);
+        return null;
+      });
+      if (existing) {
+        const mergedMetadata =
+          typeof existing.user_metadata === "object" && existing.user_metadata !== null
+            ? { ...existing.user_metadata, ...metadata }
+            : metadata;
+        const { error } = await client.auth.admin.updateUserById(existing.id, {
+          password,
+          email_confirm: true,
+          user_metadata: mergedMetadata,
+        });
+        if (error) {
+          console.error("Failed to sync gate user", email, error);
+        } else {
+          console.info("Synced gate user password", email);
+        }
+        return;
+      }
+      const { error } = await client.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: metadata,
+      });
+      if (error) {
+        console.error("Failed to seed user", email, error);
+      } else {
+        console.info("Seeded gate user", email);
+      }
+    }),
+  );
 }
 
 const COOKIE_DOMAIN = process.env.AUTH_COOKIE_DOMAIN;
@@ -123,6 +195,10 @@ export async function POST(request: Request) {
     loggedIntent = intent === "register" ? "register" : newPassword ? "password_reset" : "login";
 
     const supabase = getSupabaseAdmin();
+    
+    // Ensure seed users are synced before authentication
+    await ensureSeedUsers(supabase);
+    
     const existingUser = await findSupabaseUserByEmail(supabase, email);
 
     if (intent === "register") {

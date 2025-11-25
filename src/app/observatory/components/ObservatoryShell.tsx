@@ -31,7 +31,7 @@ export function ObservatoryShell({ children }: ObservatoryShellProps) {
   ];
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-black">
+    <div className="relative min-h-screen overflow-hidden" style={{ background: "#000000" }}>
       {/* Starfield layers */}
       {starLayers.map((layer, index) => (
         <motion.div

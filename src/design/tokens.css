@@ -1,0 +1,70 @@
+/* Snow White Laundry — Monochrome Design Tokens */
+
+:root {
+  /* Core Void Palette */
+  --void-black: #000000;
+  --void-deep: #020205;
+  --void-surface: #0a0a0f;
+  --void-glass: rgba(255, 255, 255, 0.02);
+  --void-glass-edge: rgba(255, 255, 255, 0.1);
+  
+  /* Luminance Scale (white → black) */
+  --luminance-100: rgba(255, 255, 255, 1);
+  --luminance-90: rgba(255, 255, 255, 0.9);
+  --luminance-80: rgba(255, 255, 255, 0.8);
+  --luminance-70: rgba(255, 255, 255, 0.7);
+  --luminance-60: rgba(255, 255, 255, 0.6);
+  --luminance-50: rgba(255, 255, 255, 0.5);
+  --luminance-40: rgba(255, 255, 255, 0.4);
+  --luminance-30: rgba(255, 255, 255, 0.3);
+  --luminance-20: rgba(255, 255, 255, 0.2);
+  --luminance-10: rgba(255, 255, 255, 0.1);
+  --luminance-5: rgba(255, 255, 255, 0.05);
+  
+  /* Glass Surfaces */
+  --glass-bg: rgba(255, 255, 255, 0.02);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-hover: rgba(255, 255, 255, 0.05);
+  --glass-active: rgba(255, 255, 255, 0.08);
+  
+  /* Reflection */
+  --reflection-soft: rgba(255, 255, 255, 0.03);
+  --reflection-medium: rgba(255, 255, 255, 0.06);
+  --reflection-strong: rgba(255, 255, 255, 0.1);
+  
+  /* Typography */
+  --font-heading: 'Söhne', 'Inter', -apple-system, sans-serif;
+  --font-body: 'Inter', -apple-system, sans-serif;
+  --font-mono: 'Söhne Mono', 'SF Mono', monospace;
+  
+  /* Spacing Scale */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  --space-3xl: 4rem;
+  --space-4xl: 6rem;
+  --space-5xl: 8rem;
+  --space-6xl: 12rem;
+  
+  /* Motion Timing */
+  --motion-fast: 200ms;
+  --motion-base: 400ms;
+  --motion-slow: 800ms;
+  --motion-ceremonial: 1200ms;
+  
+  /* Motion Easing */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-ceremonial: cubic-bezier(0.19, 1, 0.22, 1);
+  
+  /* Drift */
+  --drift-amplitude: 2px;
+  --drift-period: 12s;
+  
+  /* Blur */
+  --blur-glass: 20px;
+  --blur-soft: 40px;
+  --blur-medium: 60px;
+}

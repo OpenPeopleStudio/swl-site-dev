@@ -172,22 +172,22 @@ export default function ObservatoryPage() {
 
   return (
     <ObservatoryShell>
-      <div className="container mx-auto px-6 py-12 max-w-7xl">
+      <div className="mx-auto px-8 sm:px-12 md:px-16 lg:px-24 xl:px-32 py-16 sm:py-20 md:py-24 lg:py-32" style={{ maxWidth: "1920px" }}>
         {/* Header */}
-        <header className="mb-12">
-          <h1 className="text-4xl font-light text-white/90 mb-2 tracking-wide">
+        <header className="mb-16 sm:mb-20 md:mb-24 lg:mb-32">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-light text-white/90 mb-4 tracking-wide">
             Operational Observatory
           </h1>
-          <p className="text-xs uppercase tracking-[0.3em] text-white/30 font-light">
+          <p className="text-xs sm:text-sm uppercase tracking-[0.3em] text-white/30 font-light mt-4">
             Snow White Laundry · Overshare Engine Control Room
           </p>
         </header>
 
         {/* Six Chambers Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10 md:gap-12 lg:gap-16">
           {/* Chamber 1 — System Pulse */}
           <GlassChamber title="System Pulse" className="lg:col-span-2">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 sm:gap-10 md:gap-12">
               <MetricGlyph
                 label="Breadcrumbs"
                 value={systemPulse?.totalBreadcrumbs || 0}
@@ -336,8 +336,8 @@ export default function ObservatoryPage() {
         </div>
 
         {/* Footer */}
-        <footer className="mt-12 pt-8 border-t border-white/5">
-          <p className="text-xs text-white/20 font-light text-center">
+        <footer className="mt-20 sm:mt-24 md:mt-32 lg:mt-40 pt-12 sm:pt-16 border-t border-white/5">
+          <p className="text-xs sm:text-sm text-white/20 font-light text-center">
             Operational Observatory · Snow White Laundry Overshare Engine
           </p>
         </footer>

@@ -82,9 +82,9 @@ Return ONLY the completed markdown file, no explanations.`;
 
     const openai = getOpenAIClient();
 
-    const response = await openai.responses.create({
+    const response = await openai.chat.completions.create({
       model: MODEL,
-      input: [
+      messages: [
         {
           role: "system",
           content:
@@ -92,15 +92,13 @@ Return ONLY the completed markdown file, no explanations.`;
         },
         {
           role: "user",
-          content: [{ type: "input_text", text: fullPrompt }],
+          content: fullPrompt,
         },
       ],
+      temperature: 0.7,
     });
 
-    const output = response.output_text;
-    const markdown = Array.isArray(output)
-      ? output.join("\n").trim()
-      : (output ?? "");
+    const markdown = response.choices[0]?.message?.content?.trim() ?? "";
 
     if (!markdown) {
       return NextResponse.json(

@@ -59,30 +59,30 @@ export default function OvershareIndex() {
   const categories = Object.keys(grouped).sort();
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#0a0a0f] text-white">
+    <main className="relative min-h-screen overflow-hidden text-white" style={{ background: "#000000" }}>
       {/* Background layers */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,#1a1a2e_0%,transparent_50%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,#0d1117_0%,transparent_40%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(26,26,46,0.3)_0%,transparent_50%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(13,17,23,0.2)_0%,transparent_40%)]" />
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-[url('/stars.svg')] opacity-20"
+        className="absolute inset-0 bg-[url('/stars.svg')] opacity-10"
       />
 
-      <div className="relative z-10 mx-auto max-w-5xl px-6 py-16 sm:px-12 sm:py-24">
+      <div className="relative z-10 mx-auto px-8 sm:px-12 md:px-16 lg:px-24 xl:px-32 py-20 sm:py-24 md:py-32 lg:py-40" style={{ maxWidth: "1600px" }}>
         {/* Header */}
-        <header className="mb-16">
-          <p className="mb-3 text-xs uppercase tracking-[0.5em] text-cyan-400/60">
+        <header className="mb-20 sm:mb-24 md:mb-32 lg:mb-40">
+          <p className="mb-4 sm:mb-6 text-xs sm:text-sm uppercase tracking-[0.5em] text-cyan-400/60">
             Knowledge Archive
           </p>
-          <h1 className="font-['Eurostile',_sans-serif] text-5xl font-light tracking-wide text-white sm:text-6xl">
+          <h1 className="font-['Eurostile',_sans-serif] text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-light tracking-wide text-white">
             Overshare
           </h1>
-          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-white/50">
+          <p className="mt-8 sm:mt-10 md:mt-12 max-w-3xl text-lg sm:text-xl md:text-2xl leading-relaxed text-white/50">
             The living, evolving philosophy, systems, and culture behind Snow
             White Laundry. Each breadcrumb is a structured insight—generated as
             the restaurant develops, indexed for discovery.
           </p>
-          <div className="mt-8 flex items-center gap-6 text-xs text-white/30">
+          <div className="mt-10 sm:mt-12 md:mt-16 flex items-center gap-8 sm:gap-10 text-xs sm:text-sm text-white/30">
             <span>{breadcrumbs.length} breadcrumbs</span>
             <span className="h-1 w-1 rounded-full bg-white/20" />
             <span>{categories.length} categories</span>
@@ -103,16 +103,16 @@ export default function OvershareIndex() {
             </p>
           </div>
         ) : (
-          <div className="space-y-12">
+          <div className="space-y-16 sm:space-y-20 md:space-y-24 lg:space-y-32">
             {categories.map((category) => (
               <section key={category}>
-                <h2 className="mb-4 text-xs uppercase tracking-[0.4em] text-white/40">
+                <h2 className="mb-6 sm:mb-8 md:mb-10 text-xs sm:text-sm uppercase tracking-[0.4em] text-white/40">
                   {category}
                 </h2>
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid gap-4 sm:gap-6 md:gap-8 sm:grid-cols-2">
                   {grouped[category].map((bc) => (
                     <Link key={bc.slug} href={`/overshare/${bc.slug}`}>
-                      <article className="group relative overflow-hidden rounded-xl border border-white/10 bg-white/[0.02] p-5 backdrop-blur-sm transition-all duration-300 hover:border-cyan-400/30 hover:bg-white/[0.05]">
+                      <article className="group relative overflow-hidden rounded-xl border border-white/10 bg-white/[0.02] p-6 sm:p-8 md:p-10 backdrop-blur-sm transition-all duration-300 hover:border-cyan-400/30 hover:bg-white/[0.05]">
                         <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                         <h3 className="relative text-lg font-light capitalize text-white/90 transition-colors group-hover:text-white">
                           {bc.title}
@@ -133,8 +133,8 @@ export default function OvershareIndex() {
         )}
 
         {/* Footer */}
-        <footer className="mt-20 border-t border-white/10 pt-8">
-          <div className="flex flex-wrap items-center justify-between gap-4 text-xs text-white/30">
+        <footer className="mt-32 sm:mt-40 md:mt-48 lg:mt-56 border-t border-white/10 pt-12 sm:pt-16 md:pt-20">
+          <div className="flex flex-wrap items-center justify-between gap-6 sm:gap-8 text-xs sm:text-sm text-white/30">
             <p>Snow White Laundry · Overshare Engine</p>
             <Link
               href="/staff/breadcrumbs"

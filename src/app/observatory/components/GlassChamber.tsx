@@ -17,7 +17,7 @@ export function GlassChamber({ children, title, className = "" }: GlassChamberPr
 
   return (
     <motion.div
-      className={`relative backdrop-blur-[20px] border border-white/10 rounded-xl bg-white/[0.02] p-6 ${className}`}
+      className={`relative backdrop-blur-[20px] border border-white/10 rounded-xl bg-white/[0.02] p-8 sm:p-10 md:p-12 ${className}`}
       style={{
         boxShadow: "0 0 40px rgba(255,255,255,0.03), inset 0 0 20px rgba(255,255,255,0.01)",
       }}

@@ -132,3 +132,45 @@ export function generateRestaurantJSONLD(): object {
     menu: `${BASE_URL}/menu`,
   };
 }
+
+export function generateContactPageJSONLD(): object {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ContactPage",
+    name: "Contact",
+    description: "Contact Snow White Laundry",
+    url: `${BASE_URL}/contact`,
+    mainEntity: {
+      "@type": "Restaurant",
+      name: "Snow White Laundry",
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: "St. John's",
+        addressRegion: "Newfoundland and Labrador",
+        addressCountry: "CA",
+      },
+    },
+  };
+}
+
+export function generateComingSoonJSONLD(): object {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Restaurant",
+    name: "Snow White Laundry",
+    description: "Opening 2026 in St. John's, Newfoundland",
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "St. John's",
+      addressRegion: "Newfoundland and Labrador",
+      addressCountry: "CA",
+    },
+    openingDate: "2026",
+    openingHoursSpecification: {
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+      opens: "17:00",
+      closes: "23:00",
+    },
+  };
+}

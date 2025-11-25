@@ -39,11 +39,11 @@ export function EntropyList({ issues, maxItems = 20 }: EntropyListProps) {
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3 sm:space-y-4">
       {displayedIssues.map((issue, index) => (
         <div
           key={index}
-          className="flex items-start gap-3 text-xs border-b border-white/5 pb-2 last:border-0"
+          className="flex items-start gap-4 sm:gap-5 text-xs sm:text-sm border-b border-white/5 pb-3 sm:pb-4 last:border-0"
         >
           <span className={`font-light ${severityStyles[issue.severity]}`}>
             {typeLabels[issue.type] || issue.type}
