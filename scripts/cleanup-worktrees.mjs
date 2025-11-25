@@ -12,9 +12,9 @@
  * - file overwrite collisions
  */
 
-const fs = require("fs");
-const path = require("path");
-const { execSync } = require("child_process");
+import fs from "fs";
+import path from "path";
+import { execSync } from "child_process";
 
 const WORKTREE_ROOT = ".cursor/worktrees";
 const MAX_AGE_HOURS = 24; // configurable
@@ -51,7 +51,7 @@ dirs.forEach((dir) => {
   // force remove worktree
   try {
     execSync(`git worktree remove ${fullPath} --force`, { stdio: "ignore" });
-  } catch (err) {
+  } catch {
     console.log(`git worktree remove failed, using fs.rm for: ${dir}`);
     fs.rmSync(fullPath, { recursive: true, force: true });
   }

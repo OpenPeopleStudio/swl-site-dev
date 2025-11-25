@@ -24,6 +24,8 @@ export function CustomerAiHandbook({ guestEmail, events }: HandbookProps) {
   const nextEvent =
     events.find((event) => {
       if (!event.preferred_date) return false;
+      // Server component: Date comparison is deterministic per request
+      // eslint-disable-next-line react-hooks/purity
       return new Date(event.preferred_date).getTime() >= Date.now();
     }) ?? events[0];
 
@@ -145,7 +147,7 @@ export function CustomerAiHandbook({ guestEmail, events }: HandbookProps) {
           {nextEvent?.preferred_date && (
             <p className="mt-4 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-xs text-white/70">
               Next target window: <span className="text-white">{formatDateLabel(nextEvent.preferred_date)}</span>.
-              We'll nudge you if anything shifts.
+              We&apos;ll nudge you if anything shifts.
             </p>
           )}
         </article>
