@@ -9,6 +9,9 @@ import type { ReserveFormState } from "@/domains/customer/types";
 import { getSupabaseAdmin } from "@/lib/shared/supabase";
 import type { PrivateEvent } from "@/domains/events/lib/queries";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 function formatDate(value?: string | null) {
   if (!value) return "TBD";
   const date = new Date(value);

@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { ArrowRight, Calendar, Sparkles } from "lucide-react";
+import type { PrivateEvent } from "@/domains/events/lib/queries";
 
 export default function CustomerHomePage() {
   // No authentication required - customers can browse freely
-  const events: never[] = [];
-  const upcomingEvents: never[] = [];
+  const events: PrivateEvent[] = [];
+  const upcomingEvents: PrivateEvent[] = [];
 
   return (
     <>
