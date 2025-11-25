@@ -146,3 +146,218 @@ export async function recalcCheckTotals(
   }
 }
 
+// Session type for API routes
+type SessionInfo = {
+  email: string;
+  role: string;
+};
+
+/**
+ * Ensure a ticket (check) exists for the given table slugs.
+ * Returns existing open ticket or creates a new one.
+ */
+export async function ensureTicketForTables(
+  tableSlugs: string[],
+  session: SessionInfo,
+) {
+  const supabase = getSupabaseAdmin();
+
+  // Look for an existing open check for these tables
+  const { data: existing, error: lookupError } = await supabase
+    .from("pos_checks")
+    .select("*")
+    .contains("table_slugs", tableSlugs)
+    .in("status", ["open", "active"])
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (lookupError) {
+    console.error("Ticket lookup failed", lookupError);
+    throw new PosHttpError(500, "Unable to look up existing ticket.");
+  }
+
+  if (existing) {
+    return existing;
+  }
+
+  // Create new ticket
+  const { data: newTicket, error: createError } = await supabase
+    .from("pos_checks")
+    .insert({
+      table_slugs: tableSlugs,
+      status: "open",
+      opened_by: session.email,
+      subtotal: 0,
+      tax: 0,
+      total: 0,
+    })
+    .select()
+    .single();
+
+  if (createError) {
+    console.error("Ticket creation failed", createError);
+    throw new PosHttpError(500, "Unable to create ticket.");
+  }
+
+  return newTicket;
+}
+
+/**
+ * Update ticket fields (status, guest names, notes, etc.)
+ */
+export async function updateTicket(
+  ticketId: string,
+  updates: {
+    guestNames?: string[];
+    currentCourse?: string | null;
+    receiptNote?: string | null;
+    status?: string;
+    expectedRevision?: number;
+  },
+  session: SessionInfo,
+) {
+  const supabase = getSupabaseAdmin();
+
+  const updatePayload: Record<string, unknown> = {};
+  if (updates.guestNames !== undefined) updatePayload.guest_names = updates.guestNames;
+  if (updates.currentCourse !== undefined) updatePayload.current_course = updates.currentCourse;
+  if (updates.receiptNote !== undefined) updatePayload.receipt_note = updates.receiptNote;
+  if (updates.status !== undefined) updatePayload.status = updates.status;
+  updatePayload.updated_by = session.email;
+
+  let query = supabase
+    .from("pos_checks")
+    .update(updatePayload)
+    .eq("id", ticketId);
+
+  // Optimistic locking if revision provided
+  if (updates.expectedRevision !== undefined) {
+    query = query.eq("revision", updates.expectedRevision);
+  }
+
+  const { data, error } = await query.select().single();
+
+  if (error) {
+    console.error("Ticket update failed", error);
+    throw new PosHttpError(409, "Ticket update conflict or not found.");
+  }
+
+  return data;
+}
+
+/**
+ * Add a line item to a ticket
+ */
+export async function addTicketLine(
+  ticketId: string,
+  lineData: {
+    name: string;
+    seat: string;
+    price: number;
+    qty?: number;
+    menuItemId?: string | null;
+    modifierKey?: string | null;
+    modifiers?: string[];
+  },
+  _session: SessionInfo,
+) {
+  const supabase = getSupabaseAdmin();
+
+  const { data, error } = await supabase
+    .from("pos_check_lines")
+    .insert({
+      check_id: ticketId,
+      name: lineData.name,
+      seat: lineData.seat,
+      price: lineData.price,
+      qty: lineData.qty ?? 1,
+      menu_item_id: lineData.menuItemId ?? null,
+      modifier_key: lineData.modifierKey ?? null,
+      modifiers: lineData.modifiers ?? [],
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Line insert failed", error);
+    throw new PosHttpError(500, "Unable to add ticket line.");
+  }
+
+  // Recalculate totals
+  await recalcCheckTotals(supabase, ticketId);
+
+  return data;
+}
+
+/**
+ * Update an existing ticket line
+ */
+export async function updateTicketLine(
+  ticketId: string,
+  updates: {
+    lineId: string;
+    qty?: number;
+    comp?: boolean;
+    splitMode?: "none" | "even" | "custom";
+    transferTo?: string | null;
+    customSplitNote?: string | null;
+    modifiers?: string[];
+  },
+  _session: SessionInfo,
+) {
+  const supabase = getSupabaseAdmin();
+
+  const updatePayload: Record<string, unknown> = {};
+  if (updates.qty !== undefined) updatePayload.qty = updates.qty;
+  if (updates.comp !== undefined) updatePayload.comp = updates.comp;
+  if (updates.splitMode !== undefined) updatePayload.split_mode = updates.splitMode;
+  if (updates.transferTo !== undefined) updatePayload.transfer_to = updates.transferTo;
+  if (updates.customSplitNote !== undefined) updatePayload.custom_split_note = updates.customSplitNote;
+  if (updates.modifiers !== undefined) updatePayload.modifiers = updates.modifiers;
+
+  const { data, error } = await supabase
+    .from("pos_check_lines")
+    .update(updatePayload)
+    .eq("id", updates.lineId)
+    .eq("check_id", ticketId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Line update failed", error);
+    throw new PosHttpError(500, "Unable to update ticket line.");
+  }
+
+  // Recalculate totals
+  await recalcCheckTotals(supabase, ticketId);
+
+  return data;
+}
+
+/**
+ * Clear all lines from a ticket
+ */
+export async function clearTicketLines(
+  ticketId: string,
+  _session: SessionInfo,
+) {
+  const supabase = getSupabaseAdmin();
+
+  const { error } = await supabase
+    .from("pos_check_lines")
+    .delete()
+    .eq("check_id", ticketId);
+
+  if (error) {
+    console.error("Clear lines failed", error);
+    throw new PosHttpError(500, "Unable to clear ticket lines.");
+  }
+
+  // Reset totals
+  await supabase
+    .from("pos_checks")
+    .update({ subtotal: 0, tax: 0, total: 0, comp_total: 0 })
+    .eq("id", ticketId);
+}
+
