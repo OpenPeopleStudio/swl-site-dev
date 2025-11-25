@@ -11,6 +11,8 @@ const navItems = [
   { label: "Events", href: "/customer/events" },
 ];
 
+const gateUrl = process.env.NEXT_PUBLIC_GATE_URL ?? "/gate";
+
 export default function CustomerLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [navOpen, setNavOpen] = useState(false);
@@ -32,6 +34,14 @@ export default function CustomerLayout({ children }: { children: ReactNode }) {
                 Guest Portal
               </h1>
             </div>
+            <a
+              href={gateUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center justify-center rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-[0.35em] text-white/80 transition hover:border-white/60 hover:text-white"
+            >
+              Staff Login
+            </a>
           </div>
           <nav className="mt-4 w-full text-sm">
             <button

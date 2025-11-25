@@ -2,11 +2,13 @@
 
 import { type ComponentProps } from "react";
 import { FoodInventoryDashboard } from "@/apps/staff-console/boh/inventory/food/FoodInventoryDashboard";
+import { InventorySchedulePreview } from "../InventorySchedulePreview";
 import {
   listFoodInventory,
   listInventoryNotes,
   listVendorProfiles,
 } from "@/lib/staff/inventory";
+import type { ScheduleAssignment } from "@/domains/staff/schedule/types";
 
 function formatTimestamp(value?: string | null) {
   if (!value) return "Today";
@@ -118,6 +120,8 @@ export default async function FoodInventoryRoute() {
     vendor_name: vendorMap.get(item.vendor_id ?? "") ?? undefined,
   }));
 
+  const inventoryScheduleAssignments = buildInventoryAssignments(autoReplenish);
+
   return (
     <div className="w-full">
       <FoodInventoryDashboard
@@ -137,6 +141,32 @@ export default async function FoodInventoryRoute() {
         forecasts={forecasts}
         storageMap={storageMap}
       />
+      <InventorySchedulePreview assignments={inventoryScheduleAssignments} />
     </div>
   );
+}
+
+function buildInventoryAssignments(entries: FoodDashboardProps["autoReplenish"]): ScheduleAssignment[] {
+  return entries.slice(0, 5).map((entry, index) => {
+    const startHour = 8 + index * 2;
+    const endHour = startHour + 1;
+    return {
+      id: `inventory-schedule-${entry.id ?? index}`,
+      staffId: null,
+      staffName: entry.vendor ?? "Procurement Cell",
+      staffRole: "Procurement",
+      focus: "ops",
+      station: entry.ingredient ?? "Inventory",
+      role: "Replenish",
+      start: formatHourSlot(startHour),
+      end: formatHourSlot(endHour),
+      note: `Target ${entry.recommendedQuantity} ${entry.unit} · ${entry.reasoning}`,
+      status: "tentative",
+    };
+  });
+}
+
+function formatHourSlot(hour: number) {
+  const normalized = ((hour % 24) + 24) % 24;
+  return `${String(normalized).padStart(2, "0")}:00`;
 }

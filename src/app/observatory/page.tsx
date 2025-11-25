@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ObservatoryShell } from "./components/ObservatoryShell";
 import { GlassChamber } from "./components/GlassChamber";
 import { MetricGlyph } from "./components/MetricGlyph";
@@ -138,9 +138,12 @@ export default function ObservatoryPage() {
   }, []);
 
   // Generate mock drift data for cadence plots
-  const generateDriftData = (base: number, variance: number = 0.1) => {
-    return Array.from({ length: 10 }, () => base + (Math.random() - 0.5) * variance);
-  };
+  const generateDriftData = useCallback((base: number, variance: number = 0.1) => {
+    return Array.from({ length: 10 }, (_, index) => {
+      const normalized = (Math.sin(base * 37 + index * 11.3) + 1) / 2;
+      return base + (normalized - 0.5) * variance * 2;
+    });
+  }, []);
 
   // Generate constellation nodes/edges from graph data
   const constellationNodes = graph

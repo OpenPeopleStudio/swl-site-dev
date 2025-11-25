@@ -2,6 +2,16 @@
 
 import { motion } from "framer-motion";
 
+function deterministicOffset(key: string, magnitude: number) {
+  let hash = 0;
+  for (let index = 0; index < key.length; index += 1) {
+    hash = (hash << 5) - hash + key.charCodeAt(index);
+    hash |= 0;
+  }
+  const normalized = (Math.abs(hash) % 1000) / 1000;
+  return (normalized - 0.5) * magnitude;
+}
+
 interface ConstellationMapProps {
   nodes: Array<{ id: string; x: number; y: number; links: number }>;
   edges: Array<{ from: string; to: string }>;
@@ -26,10 +36,12 @@ export function ConstellationMap({ nodes, edges, className = "" }: Constellation
   const positionedNodes = nodes.map((node, index) => {
     const angle = (index / nodes.length) * Math.PI * 2;
     const distance = radius + (node.links % 3) * 2; // Vary distance by link count
+    const jitterX = deterministicOffset(`${node.id}-x`, 5);
+    const jitterY = deterministicOffset(`${node.id}-y`, 5);
     return {
       ...node,
-      x: centerX + Math.cos(angle) * distance + (Math.random() - 0.5) * 5,
-      y: centerY + Math.sin(angle) * distance + (Math.random() - 0.5) * 5,
+      x: centerX + Math.cos(angle) * distance + jitterX,
+      y: centerY + Math.sin(angle) * distance + jitterY,
     };
   });
 

@@ -1,87 +1,58 @@
-import type {
-  SettingsNavItem,
-  SettingsRole,
-  PreferencesState,
-  NotificationOption,
-} from "./types";
+import type { SettingsNavItem, SettingsRole } from "./types";
 
 export const SETTINGS_NAV: SettingsNavItem[] = [
   { id: "profile", label: "Profile", roles: ["boh", "foh", "manager", "owner"] },
-  { id: "preferences", label: "Preferences", roles: ["boh", "foh", "manager", "owner"] },
+  { id: "access", label: "Access", roles: ["boh", "foh", "manager", "owner"] },
   { id: "notifications", label: "Notifications", roles: ["boh", "foh", "manager", "owner"] },
-  { id: "integrations", label: "Integrations", roles: ["manager", "owner"] },
-  { id: "security", label: "Security", roles: ["boh", "foh", "manager", "owner"] },
-  { id: "system", label: "System", roles: ["owner"] },
+  { id: "preferences", label: "Preferences", roles: ["boh", "foh", "manager", "owner"] },
+  { id: "devices", label: "Devices", roles: ["boh", "foh", "manager", "owner"] },
 ];
 
-export const ROLE_PREFERENCE_SLICES: Record<SettingsRole, SettingsRole[]> = {
-  boh: ["boh"],
-  foh: ["foh"],
-  manager: ["boh", "foh", "manager"],
-  owner: ["boh", "foh", "manager", "owner"],
+export const ROLE_LABELS: Record<SettingsRole, string> = {
+  boh: "Back of House",
+  foh: "Front of House",
+  manager: "Manager",
+  owner: "Owner",
 };
 
-export const DEFAULT_PREFERENCES: PreferencesState = {
+export const ROLE_PERMISSION_SUMMARIES: Record<
+  SettingsRole,
+  { headline: string; capabilities: string[]; escalation: string }
+> = {
   boh: {
-    defaultStation: "garde",
-    defaultPrepView: "list",
-    measurementUnits: "metric",
-    timerBehavior: "auto",
+    headline: "Prep, production, and mise alerts",
+    capabilities: [
+      "Edit mise and prep notes",
+      "Acknowledge cooking timers",
+      "Escalate ingredient shortages",
+    ],
+    escalation: "Role edits locked to Leads or Owners",
   },
   foh: {
-    tableMapTheme: "dark",
-    pacingAlertStyle: "soft",
-    serviceChime: true,
-    allergyVisibility: "expanded",
+    headline: "Floor pacing, guest notes, pacing alerts",
+    capabilities: [
+      "Adjust pacing and holding patterns",
+      "Flag VIP or allergy guests",
+      "Push tempo updates to BOH stations",
+    ],
+    escalation: "Role edits locked to Leads or Owners",
   },
   manager: {
-    autoSurfaceWarnings: true,
-    staffingAlerts: "balanced",
-    minimalNoiseMode: false,
-    escalationChannel: "push",
+    headline: "Cross-room orchestration and staffing",
+    capabilities: [
+      "Override pacing + hold states",
+      "Set staffing modes + warnings",
+      "Approve overtime or swap requests",
+    ],
+    escalation: "Role edits locked to Owners",
   },
   owner: {
-    uiDepthMode: "expanded",
-    financialAlertThreshold: "medium",
-    reflectionCadence: "weekly",
-    timeHorizon: "month",
+    headline: "Whole-system orchestration + finance view",
+    capabilities: [
+      "Grant or revoke any role",
+      "Unlock advanced admin panes",
+      "Schedule downtime + maintenance",
+    ],
+    escalation: "Owner is the top rung",
   },
 };
-
-export const COMMON_NOTIFICATION_OPTIONS: NotificationOption[] = [
-  { id: "mentions", label: "@mention notifications", roles: "all" },
-  { id: "shift_changes", label: "Shift changes", roles: "all" },
-  { id: "emergency_alerts", label: "Emergency alerts", helper: "Always-on for Ops", roles: "all" },
-];
-
-export const ROLE_NOTIFICATION_OPTIONS: Record<SettingsRole, NotificationOption[]> = {
-  boh: [
-    { id: "prep_changes", label: "Prep changes", roles: ["boh"] },
-    { id: "allergen_updates", label: "Allergen updates", roles: ["boh"] },
-    { id: "ingredient_subs", label: "Ingredient substitutions", roles: ["boh"] },
-  ],
-  foh: [
-    { id: "pacing_alerts", label: "Pacing alerts", roles: ["foh"] },
-    { id: "wine_pairing", label: "Wine pairing levels", roles: ["foh"] },
-    { id: "vip_flags", label: "VIP flags", roles: ["foh"] },
-  ],
-  manager: [
-    { id: "service_delays", label: "Service delays", roles: ["manager"] },
-    { id: "staff_callouts", label: "Staff callouts", roles: ["manager"] },
-    { id: "equipment_issues", label: "Equipment issues", roles: ["manager"] },
-  ],
-  owner: [
-    { id: "financial_discrepancies", label: "Financial discrepancies", roles: ["owner"] },
-    { id: "vendor_cost_spikes", label: "Vendor cost spikes", roles: ["owner"] },
-    { id: "alignment_drops", label: "Alignment drops", roles: ["owner"] },
-    { id: "high_risk_nights", label: "High-risk operational nights", roles: ["owner"] },
-  ],
-};
-
-export const SCALE_STATIONS = ["garde", "hot line", "pastry", "expo", "bar"];
-
-export const CONNECTION_TYPES = [
-  { value: "ble", label: "Bluetooth LE" },
-  { value: "usb", label: "USB" },
-  { value: "wifi", label: "Wi-Fi" },
-];

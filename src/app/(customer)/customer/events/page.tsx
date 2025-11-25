@@ -227,11 +227,11 @@ export default async function CustomerEventsPage() {
         {events.length === 0 && (
           <div className="rounded-3xl border border-white/10 bg-white/[0.02] p-6 text-center text-white/70">
             <p>
-              Submit a request using the form above to get started. We'll email you with a proposal once we review your details.
+              Submit a request using the form above to get started. We&rsquo;ll email you with a proposal once we review your details.
             </p>
             <p className="mt-2 text-sm">
               Submit the form above or reach out to tom@snowwhitelaundry.co and
-              we’ll connect your profile.
+              we&rsquo;ll connect your profile.
             </p>
           </div>
         )}
@@ -271,7 +271,7 @@ async function notifyEventTeam(
     { label: "Event Type", value: (payload.event_type ?? "Private Experience") as string },
     { label: "Preferred Date", value: (payload.preferred_date ?? "TBD") as string },
     { label: "Party Size", value: String(payload.party_size ?? "TBD") },
-    { label: "Menu Style", value: (payload.menu_style ?? "Chef's choice") as string },
+    { label: "Menu Style", value: (payload.menu_style ?? "Chef&apos;s choice") as string },
     { label: "Budget Range", value: (payload.budget_range ?? "Custom") as string },
   ];
   const plainText = detailRows.map((row) => `${row.label}: ${row.value}`).join("\n");

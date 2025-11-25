@@ -1,472 +1,378 @@
 "use client";
 
+import { FormEvent, useState } from "react";
 import { motion } from "framer-motion";
-import { PageHeader } from "@/components/design/PageHeader";
-import { PageFooter } from "@/components/design/PageFooter";
-import { GlassButton } from "@/components/design/GlassButton";
-import { GlassSection } from "@/components/design/GlassSection";
-import { GlassNav } from "@/components/design/GlassNav";
-import { RitualTransition } from "@/components/design/RitualTransition";
+import { StarField } from "@/components/design/StarField";
 import { RestaurantSchema } from "@/lib/jsonld-components";
+
+/**
+ * Layout map:
+ * - Hero cluster (breadcrumbs line + wordmark + ethos + opening details).
+ * - Narrative block → craft triad → future paths rail → team snapshot → location & opening.
+ * - Stay-connected footer with mailing list stub.
+ * Future sections (Reservations, Menu, Journal, Press) can slot between the craft triad and team block without reworking shell.
+ */
+
+const aboutCopy = [
+  "Snow White Laundry is a small, high-attention dining room opening in Spring 2026 at 281 Water Street, St. John’s, Newfoundland & Labrador.",
+  "We treat a night in the restaurant as more than dinner. Every choice—how a dish is built, how a guest is greeted—begins with intention, is shaped through craft, and aims at an honest emotional response.",
+  "The room stays intimate, the menu moves with the North Atlantic seasons, and the service stays precise without tipping into ceremony.",
+];
+
+const anchorPoints = [
+  "Focused seats so each table is fully seen.",
+  "Menu that shifts with North Atlantic waters and producers.",
+  "Service that is disciplined, warm, and unscripted.",
+];
+
+const craftTenets = [
+  {
+    title: "Intention",
+    detail:
+      "Nothing is accidental. From the first email to the last glass of wine, each step is considered so guests feel looked after, not managed.",
+  },
+  {
+    title: "Emotion",
+    detail:
+      "A restaurant is a place for feeling—laughter at the bar, quiet at the table, a small moment of surprise between courses.",
+  },
+  {
+    title: "Craft",
+    detail:
+      "Technique and discipline turn intention into something guests can taste, hear, and feel. Craft makes restraint visible.",
+  },
+];
+
+const team = [
+  {
+    name: "Ken Pittman",
+    role: "Head Chef",
+    detail: "Leads the kitchen with clarity and restraint, letting the best of Newfoundland and Labrador stay at the center.",
+  },
+  {
+    name: "Tom Lane",
+    role: "General Manager",
+    detail: "Shapes the flow of the room so structure fades into the background and the night moves with intention.",
+  },
+];
+
+const futurePaths = [
+  { label: "Reservations", note: "Opens closer to service so we can honor every seat." },
+  { label: "Menus", note: "Seasonal menus publish once testing holds steady." },
+  { label: "Signals", note: "A quiet channel for guest reflections after opening." },
+];
+
+const socialLinks = [
+  { label: "Instagram", href: "https://www.instagram.com/snowwhitelaundry" },
+  { label: "Facebook", href: "https://www.facebook.com/snowwhitelaundry" },
+];
+
+const mapHref = "https://maps.google.com/?q=281%20Water%20Street%2C%20St.%20John%27s%2C%20NL";
+
+type JournalEntry = {
+  id: string;
+  dateLabel: string;
+  title: string;
+  summary: string;
+  tone: "build" | "signal";
+};
+
+// TODO[DATA]: Source journalEntries from Supabase once the updates feed is live.
+const journalEntries: JournalEntry[] = [
+  {
+    id: "landing-alignment",
+    dateLabel: "November 2025",
+    title: "Landing page aligned with the console",
+    summary:
+      "Public entry now mirrors the breadcrumbs + star-field ethos so the first impression matches the rooms our team already inhabits.",
+    tone: "build",
+  },
+  {
+    id: "mailing-list-supabase",
+    dateLabel: "November 2025",
+    title: "Mailing list wired directly into Supabase",
+    summary:
+      "Every email submitted here now lands in the mailing_list_signups table, which means updates only go out when we have something honest to share.",
+    tone: "signal",
+  },
+];
 
 export default function Landing() {
   return (
     <>
       <RestaurantSchema />
-      <main className="relative min-h-screen overflow-hidden text-white" style={{ background: "#000000" }}>
-        <EnhancedStarfield />
-        <div className="relative z-10 mx-auto px-4 sm:px-6 md:px-8 lg:px-12 py-12 sm:py-16 md:py-20 lg:py-24" style={{ maxWidth: "1800px" }}>
-          {/* Navigation */}
-          <motion.nav 
-            className="mb-12 sm:mb-16"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-          >
-            <GlassNav />
-          </motion.nav>
+      <main className="relative min-h-screen overflow-hidden bg-black text-white">
+        <StarField className="-z-20 opacity-80 pointer-events-none" />
+        <div
+          className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-black via-black/70 to-black"
+          aria-hidden="true"
+        />
 
-          {/* Hero Section */}
-          <section className="mb-24 sm:mb-32 md:mb-40 lg:mb-48">
-            <motion.div
-              className="text-center mb-12 sm:mb-16 md:mb-20"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1.2, delay: 0.3, ease: [0.19, 1, 0.22, 1] }}
-            >
-              <motion.p
-                className="mb-4 sm:mb-6 text-xs sm:text-sm uppercase tracking-[0.6em] text-white/50 font-light"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.8, delay: 0.4 }}
-              >
-                Opening 2026 · St. John's, Newfoundland
-              </motion.p>
-              
-              <motion.h1
-                className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-[10rem] font-light tracking-[0.15em] text-white mb-6 sm:mb-8 md:mb-10"
-                style={{ 
-                  fontFamily: "var(--font-eurostile), 'Eurostile', 'Bank Gothic', sans-serif",
-                  textShadow: "0 0 60px rgba(255,255,255,0.15), 0 0 120px rgba(255,255,255,0.08), 0 0 180px rgba(255,255,255,0.04)",
-                  letterSpacing: "0.2em",
-                }}
-                initial={{ opacity: 0, y: 50, scale: 0.9 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ duration: 1.6, delay: 0.5, ease: [0.19, 1, 0.22, 1] }}
+        <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col gap-24 px-4 py-12 sm:px-6 sm:py-16 md:px-10 lg:px-12">
+          <motion.header
+            className="space-y-8"
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <div className="flex flex-wrap items-center gap-3 text-[0.6rem] uppercase tracking-[0.4em] text-white/50">
+              <span>Snow White Laundry</span>
+              <span className="text-white/25">/</span>
+              <span>Public orbit</span>
+              <span className="text-white/25">/</span>
+              <span>Landing</span>
+            </div>
+
+            <div className="space-y-6">
+              <p className="text-xs uppercase tracking-[0.3em] text-white/60">
+                Opening Spring 2026 • 281 Water Street, St. John&apos;s, NL
+              </p>
+              <h1
+                className="text-4xl sm:text-5xl md:text-6xl font-light tracking-[0.12em]"
+                style={{ fontFamily: 'var(--font-eurostile, "Eurostile"), "Bank Gothic", sans-serif' }}
               >
                 Snow White Laundry
-              </motion.h1>
-
-              <motion.div
-                className="max-w-4xl mx-auto"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1, delay: 0.7 }}
-              >
-                <motion.p
-                  className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-light leading-[1.2] text-white/95 mb-8 sm:mb-10 md:mb-12"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 1, delay: 0.8 }}
-                >
-                  An experience shaped with{" "}
-                  <motion.span
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.8, delay: 1.0 }}
-                    className="italic text-white"
-                  >
-                    intention
-                  </motion.span>
-                  <span className="text-white/50 mx-2">·</span>
-                  <motion.span
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.8, delay: 1.2 }}
-                    className="italic text-white"
-                  >
-                    emotion
-                  </motion.span>
-                  <span className="text-white/50 mx-2">·</span>
-                  <motion.span
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.8, delay: 1.4 }}
-                    className="italic text-white"
-                  >
-                    craft
-                  </motion.span>
-                </motion.p>
-                
-                <motion.p
-                  className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-light text-white/70 max-w-3xl mx-auto leading-relaxed"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 1, delay: 1.6 }}
-                >
-                  Where every course is a story, every moment is designed, and every guest becomes part of our narrative.
-                </motion.p>
-              </motion.div>
-            </motion.div>
-          </section>
-
-          {/* Ethos Sections */}
-          <div className="space-y-16 sm:space-y-20 md:space-y-24 lg:space-y-32 mb-24 sm:mb-32 md:mb-40">
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 1, delay: 0.2 }}
-            >
-              <GlassSection title="Intention" delay={0}>
-                <p className="text-xl sm:text-2xl md:text-3xl text-white/70 leading-relaxed">
-                  Every detail is considered. Every moment is designed. We create experiences that honor
-                  the craft of hospitality, where each interaction is meaningful and each dish tells a story.
-                </p>
-              </GlassSection>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 1, delay: 0.2 }}
-            >
-              <GlassSection title="Emotion" delay={0}>
-                <p className="text-xl sm:text-2xl md:text-3xl text-white/70 leading-relaxed">
-                  Dining is an emotional journey. We curate spaces, flavors, and moments that resonate
-                  deeply—creating memories that linger long after the last course.
-                </p>
-              </GlassSection>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 1, delay: 0.2 }}
-            >
-              <GlassSection title="Craft" delay={0}>
-                <p className="text-xl sm:text-2xl md:text-3xl text-white/70 leading-relaxed">
-                  Mastery in the kitchen, precision in service, artistry in presentation. We honor traditional
-                  techniques while embracing innovation, always in pursuit of excellence.
-                </p>
-              </GlassSection>
-            </motion.div>
-          </div>
-
-          {/* CTA Section */}
-          <motion.div
-            className="text-center space-y-8 sm:space-y-10 md:space-y-12 mb-24 sm:mb-32"
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 1, delay: 0.3 }}
-          >
-            <motion.p
-              className="text-lg sm:text-xl md:text-2xl text-white/60 mb-8 sm:mb-10"
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-            >
-              Begin your journey
-            </motion.p>
-            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.5 }}
-              >
-                <GlassButton href="/prelude" variant="primary">
-                  Prelude
-                </GlassButton>
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.6 }}
-              >
-                <GlassButton href="/reserve" variant="secondary">
-                  Reserve
-                </GlassButton>
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.7 }}
-              >
-                <GlassButton href="/contact" variant="secondary">
-                  Contact
-                </GlassButton>
-              </motion.div>
+              </h1>
+              <p className="text-base sm:text-lg md:text-xl text-white/80 max-w-3xl leading-relaxed">
+                Through intention, and craft, we inspire emotion in everything we do.
+              </p>
             </div>
-          </motion.div>
+          </motion.header>
 
-          <PageFooter />
+          <motion.section
+            className="space-y-6 border-l border-white/15 pl-6 sm:pl-8"
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-20%" }}
+            transition={{ duration: 0.8 }}
+            aria-label="About the restaurant"
+          >
+            {aboutCopy.map((paragraph) => (
+              <p key={paragraph} className="text-sm sm:text-base leading-relaxed text-white/80">
+                {paragraph}
+              </p>
+            ))}
+            <ul className="mt-6 space-y-3 text-sm text-white/60">
+              {anchorPoints.map((point) => (
+                <li key={point} className="flex items-start gap-3">
+                  <span className="mt-1 h-px w-6 bg-white/30" aria-hidden="true" />
+                  <span>{point}</span>
+                </li>
+              ))}
+            </ul>
+          </motion.section>
+
+          <motion.section
+            className="grid gap-10 md:grid-cols-3"
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-20%" }}
+            transition={{ duration: 0.8 }}
+            aria-label="Intention, emotion, craft"
+          >
+            {craftTenets.map((tenet) => (
+              <article key={tenet.title} className="space-y-4">
+                <p className="text-xs uppercase tracking-[0.3em] text-white/50">{tenet.title}</p>
+                <p className="text-sm text-white/80 leading-relaxed">{tenet.detail}</p>
+              </article>
+            ))}
+          </motion.section>
+
+          <motion.section
+            className="space-y-4"
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-20%" }}
+            transition={{ duration: 0.8 }}
+            aria-label="Future site structure"
+          >
+            <p className="text-xs uppercase tracking-[0.35em] text-white/40">Future paths</p>
+            <div className="flex flex-wrap gap-6 text-sm text-white/60">
+              {futurePaths.map((path) => (
+                <div key={path.label} className="space-y-2">
+                  <span className="rounded-full border border-white/15 px-4 py-2 tracking-[0.2em] uppercase text-[0.65rem]">
+                    {path.label}
+                  </span>
+                  <p className="max-w-[14rem] text-xs text-white/40">{path.note}</p>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-white/40">Journal is live below; the remaining paths unlock when those systems are real.</p>
+          </motion.section>
+
+          <motion.section
+            className="space-y-6 border-l border-white/15 pl-6 sm:pl-8"
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-20%" }}
+            transition={{ duration: 0.8 }}
+            aria-label="Journal updates"
+          >
+            <div className="flex flex-wrap items-center gap-3">
+              <p className="text-xs uppercase tracking-[0.35em] text-white/40">Journal / Updates</p>
+              <span className="text-[0.6rem] uppercase tracking-[0.35em] text-white/40">Live</span>
+            </div>
+            <div className="space-y-6">
+              {journalEntries.map((entry) => (
+                <article key={entry.id} className="space-y-2 text-white/80">
+                  <p className="text-[0.6rem] uppercase tracking-[0.4em] text-white/40">{entry.dateLabel}</p>
+                  <h3 className="text-base font-light tracking-[0.08em] text-white">{entry.title}</h3>
+                  <p className="text-sm leading-relaxed text-white/70">{entry.summary}</p>
+                </article>
+              ))}
+            </div>
+          </motion.section>
+
+          <motion.section
+            className="space-y-6"
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-20%" }}
+            transition={{ duration: 0.8 }}
+            aria-label="Team"
+          >
+            <p className="text-xs uppercase tracking-[0.35em] text-white/40">Team</p>
+            <div className="flex flex-col gap-6 sm:flex-row sm:gap-10">
+              {team.map((person) => (
+                <article key={person.name} className="space-y-2 text-sm text-white/80 sm:max-w-[18rem]">
+                  <p className="text-white text-sm uppercase tracking-[0.25em]">
+                    {person.name}
+                    <span className="text-white/40"> — {person.role}</span>
+                  </p>
+                  <p className="text-white/70">{person.detail}</p>
+                </article>
+              ))}
+            </div>
+          </motion.section>
+
+          <motion.section
+            className="space-y-4 border-t border-white/10 pt-8"
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-20%" }}
+            transition={{ duration: 0.8 }}
+            aria-label="Opening details"
+          >
+            <p className="text-xs uppercase tracking-[0.35em] text-white/40">Opening Spring 2026</p>
+            <div className="space-y-2 text-sm sm:text-base text-white/80">
+              <p>281 Water Street</p>
+              <p>St. John&apos;s, Newfoundland & Labrador</p>
+            </div>
+            <a
+              href={mapHref}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex w-fit items-center gap-2 rounded-full border border-white/30 px-5 py-2 text-[0.65rem] uppercase tracking-[0.3em] text-white/80 transition hover:border-white/60"
+            >
+              View on Maps
+              <span aria-hidden="true">↗</span>
+            </a>
+          </motion.section>
+
+          <motion.section
+            className="space-y-6 border-t border-white/10 pt-8"
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-20%" }}
+            transition={{ duration: 0.8 }}
+            aria-label="Stay connected"
+          >
+            <div className="space-y-3">
+              <p className="text-xs uppercase tracking-[0.35em] text-white/40">Stay connected</p>
+              <p className="text-sm text-white/70 max-w-xl">
+                We will share quiet updates in the lead-up to opening night. Leave your email and we will write when there is
+                something real to say.
+              </p>
+            </div>
+            <MailingListForm />
+            <div className="space-y-2">
+              <p className="text-xs uppercase tracking-[0.35em] text-white/40">Follow along</p>
+              <div className="flex flex-wrap gap-4 text-sm">
+                {socialLinks.map((link) => (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-white/70 transition hover:text-white"
+                  >
+                    {link.label}
+                  </a>
+                ))}
+              </div>
+            </div>
+          </motion.section>
         </div>
       </main>
     </>
   );
 }
 
-function EnhancedStarfield() {
-  const starLayers = [
-    {
-      size: 320,
-      opacity: 0.2,
-      duration: 120,
-      travel: ["0% 0%", "-40% 25%"],
-      glow: "drop-shadow(0 0 10px rgba(255,255,255,0.5))",
-    },
-    {
-      size: 180,
-      opacity: 0.25,
-      duration: 160,
-      travel: ["0% 0%", "55% -35%"],
-      glow: "drop-shadow(0 0 12px rgba(248,250,252,0.4))",
-    },
-    {
-      size: 90,
-      opacity: 0.3,
-      duration: 240,
-      travel: ["0% 0%", "-60% -40%"],
-      glow: "drop-shadow(0 0 14px rgba(255,255,255,0.35))",
-    },
-    {
-      size: 45,
-      opacity: 0.35,
-      duration: 300,
-      travel: ["0% 0%", "30% 50%"],
-      glow: "drop-shadow(0 0 8px rgba(255,255,255,0.4))",
-    },
-  ];
+function MailingListForm() {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [message, setMessage] = useState<string | null>(null);
 
-  const nebulae = [
-    {
-      position: { top: "-18%", left: "-8%" },
-      size: 600,
-      from: "rgba(255,255,255,0.25)",
-      to: "rgba(5,7,13,0)",
-      duration: 45,
-      rotate: 6,
-    },
-    {
-      position: { bottom: "-25%", right: "-10%" },
-      size: 800,
-      from: "rgba(255,255,255,0.18)",
-      to: "rgba(2,3,7,0)",
-      duration: 60,
-      rotate: -4,
-    },
-    {
-      position: { top: "12%", right: "12%" },
-      size: 450,
-      from: "rgba(255,255,255,0.15)",
-      to: "rgba(1,3,8,0)",
-      duration: 40,
-      rotate: 12,
-    },
-    {
-      position: { top: "50%", left: "5%" },
-      size: 380,
-      from: "rgba(255,255,255,0.12)",
-      to: "rgba(3,5,10,0)",
-      duration: 50,
-      rotate: -8,
-    },
-  ];
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!email || status === "submitting") return;
 
-  const orbitRings = [
-    {
-      size: "70vw",
-      color: "rgba(255,255,255,0.15)",
-      opacity: 0.3,
-      duration: 180,
-    },
-    {
-      size: "95vw",
-      color: "rgba(255,255,255,0.1)",
-      opacity: 0.25,
-      duration: 250,
-    },
-    {
-      size: "120vw",
-      color: "rgba(255,255,255,0.06)",
-      opacity: 0.2,
-      duration: 320,
-    },
-  ];
+    setStatus("submitting");
+    setMessage(null);
+
+    try {
+      const response = await fetch("/api/mailing-list/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, source: "landing" }),
+      });
+
+      const payload = (await response.json().catch(() => ({}))) as { error?: string; duplicate?: boolean };
+
+      if (!response.ok) {
+        throw new Error(payload.error || "Unable to save email.");
+      }
+
+      setEmail("");
+      setStatus("success");
+      setMessage(
+        payload.duplicate
+          ? "You are already on the list — thank you for waiting with us."
+          : "We will reach out once there is something real to share.",
+      );
+    } catch (error) {
+      console.error("Mailing list submission failed", error);
+      setStatus("error");
+      setMessage("Something went wrong. Please try again soon.");
+    }
+  }
 
   return (
-    <div className="absolute inset-0 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-black via-[#05070d] to-[#010106]" />
-      <motion.div
-        className="absolute inset-x-[-15%] top-[-20%] h-[120vh] opacity-30 blur-[180px]"
-        style={{
-          background:
-            "radial-gradient(circle, rgba(255,255,255,0.15), transparent 65%)",
-        }}
-        animate={{ rotate: [0, 8, 0] }}
-        transition={{ duration: 60, repeat: Infinity, ease: "easeInOut" }}
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4 sm:flex-row sm:items-center">
+      <label className="sr-only" htmlFor="landing-email">
+        Email address
+      </label>
+      <input
+        id="landing-email"
+        type="email"
+        required
+        value={email}
+        onChange={(event) => setEmail(event.target.value)}
+        autoComplete="email"
+        placeholder="email@example.com"
+        className="flex-1 rounded-none border-b border-white/30 bg-transparent px-0 py-3 text-sm text-white placeholder:text-white/30 focus:border-white focus:outline-none disabled:cursor-not-allowed"
+        disabled={status === "submitting"}
       />
-      <motion.div
-        className="absolute inset-x-[-10%] bottom-[-15%] h-[100vh] opacity-20 blur-[140px]"
-        style={{
-          background:
-            "radial-gradient(circle, rgba(255,255,255,0.1), transparent 60%)",
-        }}
-        animate={{ rotate: [0, -6, 0] }}
-        transition={{ duration: 80, repeat: Infinity, ease: "easeInOut" }}
-      />
-      {starLayers.map((layer, index) => (
-        <motion.div
-          key={`star-layer-${index}`}
-          className="absolute inset-0 mix-blend-screen"
-          style={{
-            opacity: layer.opacity,
-            backgroundImage:
-              "radial-gradient(circle, rgba(255,255,255,0.5) 0.7px, transparent 0.7px)",
-            backgroundSize: `${layer.size}px ${layer.size}px`,
-            filter: layer.glow,
-            willChange: "background-position",
-          }}
-          animate={{ backgroundPosition: layer.travel }}
-          transition={{
-            duration: layer.duration,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-        />
-      ))}
-      {nebulae.map((nebula, index) => (
-        <motion.div
-          key={`nebula-${index}`}
-          className="absolute rounded-full blur-[120px]"
-          style={{
-            ...nebula.position,
-            width: nebula.size,
-            height: nebula.size,
-            background: `radial-gradient(circle, ${nebula.from} 0%, ${nebula.to} 70%)`,
-          }}
-          animate={{ rotate: nebula.rotate }}
-          transition={{
-            duration: nebula.duration,
-            repeat: Infinity,
-            repeatType: "mirror",
-            ease: "easeInOut",
-          }}
-        />
-      ))}
-      {orbitRings.map((ring, index) => (
-        <motion.div
-          key={`ring-${index}`}
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border"
-          style={{
-            width: ring.size,
-            height: ring.size,
-            borderColor: ring.color,
-            opacity: ring.opacity,
-          }}
-          animate={{ rotate: [0, 360] }}
-          transition={{
-            duration: ring.duration,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-        />
-      ))}
-      <div className="absolute inset-x-0 bottom-0 h-[320px] bg-gradient-to-t from-black via-[#05070d] to-transparent" />
-      <ShootingStars />
-      <ConstellationPatterns />
-    </div>
-  );
-}
-
-function ShootingStars() {
-  const traces = [
-    { top: "15%", left: "8%", angle: -25, distance: 1000, delay: 1.5, duration: 6 },
-    { top: "35%", left: "80%", angle: 155, distance: 850, delay: 3.2, duration: 7 },
-    { top: "60%", left: "15%", angle: -5, distance: 700, delay: 5.8, duration: 5.5 },
-    { top: "80%", left: "70%", angle: 135, distance: 750, delay: 8.5, duration: 6.5 },
-    { top: "25%", left: "50%", angle: 45, distance: 900, delay: 11.2, duration: 7.2 },
-  ];
-
-  return (
-    <>
-      {traces.map((trace, index) => {
-        const radians = (trace.angle * Math.PI) / 180;
-        const dx = Math.cos(radians) * trace.distance;
-        const dy = Math.sin(radians) * trace.distance;
-        return (
-          <motion.span
-            key={`shooting-${index}`}
-            className="pointer-events-none absolute h-px w-32 origin-left bg-gradient-to-r from-transparent via-white/90 to-transparent opacity-0 mix-blend-screen"
-            style={{
-              top: trace.top,
-              left: trace.left,
-              rotate: trace.angle,
-            }}
-            animate={{
-              x: [0, dx],
-              y: [0, dy],
-              opacity: [0, 0.9, 0],
-            }}
-            transition={{
-              duration: trace.duration,
-              delay: trace.delay,
-              repeat: Infinity,
-              repeatDelay: 6,
-              ease: "easeInOut",
-            }}
-          />
-        );
-      })}
-    </>
-  );
-}
-
-function ConstellationPatterns() {
-  const brightStars = [
-    { x: "15%", y: "20%", size: 3, delay: 0 },
-    { x: "78%", y: "32%", size: 2.5, delay: 0.3 },
-    { x: "48%", y: "67%", size: 2, delay: 0.6 },
-    { x: "85%", y: "75%", size: 2.5, delay: 0.9 },
-    { x: "25%", y: "60%", size: 2, delay: 1.2 },
-    { x: "65%", y: "15%", size: 3, delay: 1.5 },
-  ];
-
-  return (
-    <>
-      {brightStars.map((star, index) => (
-        <motion.div
-          key={`bright-star-${index}`}
-          className="absolute rounded-full bg-white/80"
-          style={{
-            left: star.x,
-            top: star.y,
-            width: `${star.size}px`,
-            height: `${star.size}px`,
-            boxShadow: "0 0 12px rgba(255,255,255,0.8), 0 0 24px rgba(255,255,255,0.4), 0 0 40px rgba(255,255,255,0.2)",
-            filter: "blur(0.5px)",
-          }}
-          initial={{ opacity: 0, scale: 0 }}
-          animate={{ 
-            opacity: [0, 1, 0.9, 1],
-            scale: [0, 1.3, 1, 1.1],
-          }}
-          transition={{
-            duration: 3,
-            delay: star.delay,
-            repeat: Infinity,
-            repeatDelay: 4,
-            ease: "easeInOut",
-          }}
-        />
-      ))}
-    </>
+      <button
+        type="submit"
+        className="w-full sm:w-auto rounded-full border border-white/30 px-6 py-3 text-[0.7rem] uppercase tracking-[0.35em] text-white transition hover:border-white/70 disabled:cursor-not-allowed disabled:border-white/15 disabled:text-white/40"
+        disabled={status === "submitting"}
+      >
+        {status === "submitting" ? "Sending" : "Notify me"}
+      </button>
+      <p className="text-xs text-white/50 sm:ml-4" aria-live="polite">
+        {message}
+      </p>
+    </form>
   );
 }

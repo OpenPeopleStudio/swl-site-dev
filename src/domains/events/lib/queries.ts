@@ -23,6 +23,7 @@ export type PrivateEvent = {
   photos?: string[] | null;
   reflection_prompt_sent?: boolean | null;
   notes_internal?: string | null;
+  operational_requirements?: Record<string, boolean> | null;
   created_at?: string | null;
   updated_at?: string | null;
   [key: string]: unknown;
@@ -81,6 +82,10 @@ function requireSupabaseAdmin() {
     throw new Error("Supabase admin client not initialized");
   }
   return supabaseAdmin;
+}
+
+export function getEventsSupabaseAdmin() {
+  return requireSupabaseAdmin();
 }
 
 export const getEventById = cache(async (id: string) => {

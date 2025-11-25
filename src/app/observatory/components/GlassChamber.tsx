@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode } from "react";
+import { type ReactNode, useMemo } from "react";
 import { motion } from "framer-motion";
 
 interface GlassChamberProps {
@@ -10,10 +10,14 @@ interface GlassChamberProps {
 }
 
 export function GlassChamber({ children, title, className = "" }: GlassChamberProps) {
-  // Drift physics: 2-4px amplitude, 10-14s period, random phase
-  const driftAmplitude = 2 + Math.random() * 2; // 2-4px
-  const driftPeriod = 10 + Math.random() * 4; // 10-14s
-  const phaseOffset = Math.random() * Math.PI * 2;
+  const seed = `${title ?? "glass-chamber"}-${className}`;
+  const { driftAmplitude, driftPeriod, phaseOffset } = useMemo(() => {
+    return {
+      driftAmplitude: seededFloat(`${seed}-amp`, 2, 4),
+      driftPeriod: seededFloat(`${seed}-period`, 10, 14),
+      phaseOffset: seededFloat(`${seed}-phase`, 0, Math.PI * 2),
+    };
+  }, [seed]);
 
   return (
     <motion.div
@@ -51,4 +55,14 @@ export function GlassChamber({ children, title, className = "" }: GlassChamberPr
       {children}
     </motion.div>
   );
+}
+
+function seededFloat(key: string, min: number, max: number) {
+  let hash = 0;
+  for (let index = 0; index < key.length; index += 1) {
+    hash = (hash << 5) - hash + key.charCodeAt(index);
+    hash |= 0;
+  }
+  const normalized = (Math.abs(hash) % 1000) / 1000;
+  return min + normalized * (max - min);
 }

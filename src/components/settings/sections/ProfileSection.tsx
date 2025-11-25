@@ -1,25 +1,19 @@
 "use client";
 
 import Image from "next/image";
-import type { ProfileState } from "../types";
+import { SettingsField, SettingsSection } from "../SettingsSection";
+import type { StaffProfileSettings } from "../types";
 
 type Props = {
-  profile: ProfileState;
+  profile: StaffProfileSettings;
   disabled?: boolean;
-  onChange: (patch: Partial<ProfileState>) => void;
+  onChange: (patch: Partial<StaffProfileSettings>) => void;
   onSave: () => Promise<void>;
   saving: boolean;
-  statusMessage: string | null;
+  statusMessage?: string;
 };
 
-export function ProfileSection({
-  profile,
-  disabled,
-  onChange,
-  onSave,
-  saving,
-  statusMessage,
-}: Props) {
+export function ProfileSection({ profile, disabled, onChange, onSave, saving, statusMessage }: Props) {
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (disabled) return;
@@ -27,114 +21,126 @@ export function ProfileSection({
   }
 
   return (
-    <section className="glass-panel text-white">
-      <header className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <p className="text-xs uppercase tracking-[0.5em] text-white/50">Profile</p>
-          <h2 className="text-3xl font-light">Identity & Contact</h2>
-        </div>
-        <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.4em] text-white/50">
-          <span className="rounded-full border border-white/15 px-3 py-1">
-            Role · {profile.role.toUpperCase()}
-          </span>
-          <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-emerald-200">
-            Staff ID · {profile.staffId.slice(0, 8)}
-          </span>
-        </div>
-      </header>
-
-      <form onSubmit={handleSubmit} className="grid gap-6 md:grid-cols-2">
-        <div className="space-y-3">
-          <label className="flex flex-col gap-2 text-sm uppercase tracking-[0.3em] text-white/60">
-            Name
+    <SettingsSection
+      kicker="Profile"
+      title="Identity"
+      description="Display name, contact info, and avatar appear everywhere across StaffOS."
+    >
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="grid gap-6 md:grid-cols-2">
+          <SettingsField label="Display name">
             <input
               type="text"
-              value={profile.name}
+              value={profile.fullName}
               disabled={disabled}
-              onChange={(event) => onChange({ name: event.target.value })}
-              className="rounded-2xl border border-white/15 bg-black/30 px-4 py-3 text-base text-white focus:border-cyan-400/60 focus:outline-none"
+              onChange={(event) => onChange({ fullName: event.target.value })}
+              className="w-full rounded-2xl border border-white/15 bg-transparent px-4 py-2 text-sm text-white placeholder:text-white/30 focus:border-cyan-300/60 focus:outline-none"
             />
-          </label>
-          <label className="flex flex-col gap-2 text-sm uppercase tracking-[0.3em] text-white/60">
-            Email
+          </SettingsField>
+
+          <SettingsField label="Email">
             <input
               type="email"
               value={profile.email}
               disabled={disabled}
               onChange={(event) => onChange({ email: event.target.value })}
-              className="rounded-2xl border border-white/15 bg-black/30 px-4 py-3 text-base text-white focus:border-cyan-400/60 focus:outline-none"
+              className="w-full rounded-2xl border border-white/15 bg-transparent px-4 py-2 text-sm text-white placeholder:text-white/30 focus:border-cyan-300/60 focus:outline-none"
             />
-          </label>
-          <label className="flex flex-col gap-2 text-sm uppercase tracking-[0.3em] text-white/60">
-            Phone
+          </SettingsField>
+
+          <SettingsField label="Phone">
             <input
               type="tel"
-              value={profile.phone}
+              value={profile.phoneNumber ?? ""}
               disabled={disabled}
-              onChange={(event) => onChange({ phone: event.target.value })}
-              className="rounded-2xl border border-white/15 bg-black/30 px-4 py-3 text-base text-white focus:border-cyan-400/60 focus:outline-none"
+              onChange={(event) => onChange({ phoneNumber: event.target.value })}
+              className="w-full rounded-2xl border border-white/15 bg-transparent px-4 py-2 text-sm text-white placeholder:text-white/30 focus:border-cyan-300/60 focus:outline-none"
             />
-          </label>
+          </SettingsField>
+
+          <SettingsField label="Timezone">
+            <select
+              value={profile.timezone ?? "America/Chicago"}
+              disabled={disabled}
+              onChange={(event) => onChange({ timezone: event.target.value })}
+              className="w-full rounded-2xl border border-white/15 bg-black/30 px-4 py-2 text-sm text-white focus:border-cyan-300/60 focus:outline-none"
+            >
+              <option value="America/Chicago">America/Chicago</option>
+              <option value="America/Los_Angeles">America/Los_Angeles</option>
+              <option value="America/New_York">America/New_York</option>
+            </select>
+          </SettingsField>
         </div>
 
-        <div className="space-y-3">
-          <label className="flex flex-col gap-2 text-sm uppercase tracking-[0.3em] text-white/60">
-            Profile photo URL
+        <div className="grid gap-6 md:grid-cols-2">
+          <SettingsField label="Avatar URL" helper="Shown in badges, schedules, and reflections.">
             <input
               type="url"
-              value={profile.photoUrl}
+              value={profile.avatarUrl ?? ""}
               disabled={disabled}
-              onChange={(event) => onChange({ photoUrl: event.target.value })}
-              className="rounded-2xl border border-white/15 bg-black/30 px-4 py-3 text-base text-white focus:border-cyan-400/60 focus:outline-none"
+              onChange={(event) => onChange({ avatarUrl: event.target.value })}
+              className="w-full rounded-2xl border border-white/15 bg-transparent px-4 py-2 text-sm text-white placeholder:text-white/30 focus:border-cyan-300/60 focus:outline-none"
             />
-          </label>
-          <div className="flex items-center gap-4 rounded-2xl border border-white/10 bg-black/20 p-4">
-            <div className="h-16 w-16 overflow-hidden rounded-2xl border border-white/10 bg-black/40">
-              {profile.photoUrl ? (
+          </SettingsField>
+          <div className="flex items-center gap-4 rounded-2xl border border-white/10 bg-black/20 p-3">
+            <div className="h-14 w-14 overflow-hidden rounded-2xl border border-white/10 bg-black/40">
+              {profile.avatarUrl ? (
                 <Image
-                  src={profile.photoUrl}
-                  alt={profile.name}
-                  width={64}
-                  height={64}
+                  src={profile.avatarUrl}
+                  alt={profile.fullName}
+                  width={56}
+                  height={56}
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center text-white/30">
-                  —
-                </div>
+                <div className="flex h-full w-full items-center justify-center text-white/30">—</div>
               )}
             </div>
-            <p className="text-sm text-white/70">
-              Drop a hosted image URL to refresh your cortex badge. We cache thumbnails for staff
-              quick lookups.
-            </p>
-          </div>
-          <div className="grid gap-2 text-xs uppercase tracking-[0.35em] text-white/50">
-            <span>Role access</span>
-            <div className="rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-base tracking-[0.2em]">
-              {profile.role}
-            </div>
+            <p className="text-xs text-white/60">Drop a hosted image URL. We cache thumbnails per staff ID.</p>
           </div>
         </div>
 
-        <div className="md:col-span-2 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-4">
-          <p className="text-xs uppercase tracking-[0.4em] text-white/40">
-            Writes sync to Supabase · user_profiles
+        <div className="grid gap-4 md:grid-cols-3">
+          <SettingsField label="Role">
+            <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm uppercase tracking-[0.35em] text-white/70">
+              {profile.role}
+            </div>
+          </SettingsField>
+          <SettingsField label="Staff number">
+            <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-white/70">
+              {profile.staffNumber ?? "pending"}
+            </div>
+          </SettingsField>
+          <SettingsField label="Locale">
+            <select
+              value={profile.locale ?? "en-US"}
+              disabled={disabled}
+              onChange={(event) => onChange({ locale: event.target.value })}
+              className="w-full rounded-2xl border border-white/15 bg-black/30 px-4 py-2 text-sm text-white focus:border-cyan-300/60 focus:outline-none"
+            >
+              <option value="en-US">English (US)</option>
+              <option value="es-MX">Español (MX)</option>
+              <option value="fr-CA">Français (CA)</option>
+            </select>
+          </SettingsField>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-4">
+          <p className="text-[0.65rem] uppercase tracking-[0.4em] text-white/40 whitespace-nowrap">
+            Writes sync to Supabase · staff_profile
           </p>
           <div className="flex items-center gap-3">
-            {statusMessage && (
-              <span className="text-xs uppercase tracking-[0.35em] text-emerald-300">{statusMessage}</span>
-            )}
+            {statusMessage && <span className="text-xs text-white/60">{statusMessage}</span>}
             <button
               type="submit"
               disabled={disabled || saving}
-              className="rounded-2xl border border-cyan-400/40 bg-cyan-400/10 px-6 py-2 text-xs uppercase tracking-[0.4em] text-cyan-200 hover:border-cyan-300/80 disabled:opacity-40"
+              className="rounded-full border border-cyan-400/50 px-5 py-2 text-xs uppercase tracking-[0.35em] text-cyan-200 transition hover:border-cyan-300 disabled:opacity-40"
             >
-              {saving ? "Saving…" : "Save Profile"}
+              {saving ? "Saving…" : "Save profile"}
             </button>
           </div>
         </div>
       </form>
-    </section>
+    </SettingsSection>
   );
 }

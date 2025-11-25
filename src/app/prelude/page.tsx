@@ -43,7 +43,7 @@ export default function PreludePage() {
 
           <GlassSection title="Newfoundland Context" delay={0.4}>
             <p className="text-lg sm:text-xl md:text-2xl text-white/60 leading-relaxed mb-6">
-              St. John's, Newfoundland, is a place of rugged beauty, resilient communities, and deep
+              St. John’s, Newfoundland, is a place of rugged beauty, resilient communities, and deep
               traditions. Here, the ocean meets the land with force and grace, shaping both the landscape
               and the culture.
             </p>

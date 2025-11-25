@@ -134,7 +134,7 @@ export default function CustomerHomePage() {
             Plan your private dining experience.
           </p>
           <p className="text-sm text-white/60 mb-6">
-            Submit a request and we'll craft a personalized proposal for your event.
+            Submit a request and we&rsquo;ll craft a personalized proposal for your event.
           </p>
           <Link
             href="/customer/events"

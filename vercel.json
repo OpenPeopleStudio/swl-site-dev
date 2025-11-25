@@ -3,6 +3,10 @@
     {
       "path": "/api/updates/generate",
       "schedule": "0 10 * * 2"
+    },
+    {
+      "path": "/api/staff/menu/ingest",
+      "schedule": "0 * * * *"
     }
   ]
 }

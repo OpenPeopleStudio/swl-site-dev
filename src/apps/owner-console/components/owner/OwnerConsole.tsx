@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { MenuBuilderWorkspace } from "./MenuBuilderWorkspace";
+import { OwnerMenuSectionsPreview } from "./OwnerMenuSectionsPreview";
 
 type Snapshot = {
   label: string;
@@ -367,7 +368,8 @@ function MenuBuilderSheet({ onClose }: { onClose: () => void }) {
         >
           Close
         </button>
-        <div className="mt-10 h-full overflow-y-auto pr-2">
+        <div className="mt-10 h-full space-y-8 overflow-y-auto pr-2">
+          <OwnerMenuSectionsPreview />
           <MenuBuilderWorkspace {...data} />
         </div>
       </div>
