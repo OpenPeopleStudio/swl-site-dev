@@ -4,7 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 export type PrivateEvent = {
   id: string;
   user_id?: string | null;
-  guest_name: string;
+  guest_name: string | null;
   guest_email?: string | null;
   organization?: string | null;
   event_type?: string | null;
