@@ -1,5 +1,5 @@
-import StaffSchedulingBoard from "@/domains/staff/components/StaffSchedulingBoard";
-import StaffCalendarBoard from "@/domains/staff/components/StaffCalendarBoard";
+import StaffSchedulingBoard from "@/apps/staff-console/manager/StaffSchedulingBoard";
+import StaffCalendarBoard from "@/apps/staff-console/manager/StaffCalendarBoard";
 
 export default function SchedulePage() {
   return (

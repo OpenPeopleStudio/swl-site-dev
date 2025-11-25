@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { supabaseBrowser } from "@/lib/supabaseBrowser";
+import { supabaseBrowser } from "@/lib/shared/supabaseBrowser";
 
 export function useUpload(bucket = "chat_uploads") {
   const [uploading, setUploading] = useState(false);

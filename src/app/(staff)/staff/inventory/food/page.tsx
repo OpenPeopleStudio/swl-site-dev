@@ -1,12 +1,12 @@
 "use server";
 
 import { type ComponentProps } from "react";
-import { FoodInventoryDashboard } from "@/domains/staff/inventory/food/FoodInventoryDashboard";
+import { FoodInventoryDashboard } from "@/apps/staff-console/boh/inventory/food/FoodInventoryDashboard";
 import {
   listFoodInventory,
   listInventoryNotes,
   listVendorProfiles,
-} from "@/lib/inventory";
+} from "@/lib/staff/inventory";
 
 function formatTimestamp(value?: string | null) {
   if (!value) return "Today";

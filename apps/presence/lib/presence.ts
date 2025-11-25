@@ -1,8 +1,8 @@
 "use client";
 
 import type { RealtimeChannel } from "@supabase/supabase-js";
-import { supabaseBrowser } from "@/lib/supabaseBrowser";
-import type { StaffIdentity } from "@/lib/getCurrentUser";
+import { supabaseBrowser } from "@/lib/shared/supabaseBrowser";
+import type { StaffIdentity } from "@/lib/shared/getCurrentUser";
 
 type PresenceState = "online" | "on-shift" | "away";
 

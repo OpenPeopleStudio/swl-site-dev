@@ -1,9 +1,9 @@
 # InventoryOS API Endpoints
 
-The following endpoints sit under `/api/inventory/*` and call Supabase RPC functions to interact with the InventoryOS tables. All requests are `POST` and expect JSON payloads.
+The following endpoints sit under `/api/staff/inventory/*` and call Supabase RPC functions to interact with the InventoryOS tables. All requests are `POST` and expect JSON payloads.
 
 ## Food Receiving
-- **Endpoint:** `/api/inventory/food/receive`
+- **Endpoint:** `/api/staff/inventory/food/receive`
 - **Payload:**
 ```json
 {
@@ -21,7 +21,7 @@ The following endpoints sit under `/api/inventory/*` and call Supabase RPC funct
 - **Response:** `{ "item_id": "...", "new_on_hand": 42.5, "last_invoice_cost": 18.25 }`
 
 ## Food Waste
-- **Endpoint:** `/api/inventory/food/waste`
+- **Endpoint:** `/api/staff/inventory/food/waste`
 - **Payload:**
 ```json
 {
@@ -36,7 +36,7 @@ The following endpoints sit under `/api/inventory/*` and call Supabase RPC funct
 - **Response:** `{ "item_id": "...", "new_on_hand": 38.3 }`
 
 ## Alcohol Receiving
-- **Endpoint:** `/api/inventory/alcohol/receive`
+- **Endpoint:** `/api/staff/inventory/alcohol/receive`
 - **Payload:**
 ```json
 {
@@ -53,7 +53,7 @@ The following endpoints sit under `/api/inventory/*` and call Supabase RPC funct
 - **Response:** `{ "item_id": "...", "new_bottle_count": 24, "new_open_volume": 1.5 }`
 
 ## Alcohol Variance
-- **Endpoint:** `/api/inventory/alcohol/variance`
+- **Endpoint:** `/api/staff/inventory/alcohol/variance`
 - **Payload:**
 ```json
 {
@@ -68,7 +68,7 @@ The following endpoints sit under `/api/inventory/*` and call Supabase RPC funct
 - **Response:** `{ "item_id": "...", "variance_percent": -6.25, "variance_value": -1.5 }`
 
 ## Inventory Health Report
-- **Endpoint:** `/api/inventory/health-report`
+- **Endpoint:** `/api/staff/inventory/health-report`
 - **Payload:** `{ "reportDate": "2025-01-13" }` (optional, defaults to current date)
 - **Response:** `{ "reportId": "uuid" }`
 
@@ -87,7 +87,7 @@ The following endpoints sit under `/api/inventory/*` and call Supabase RPC funct
 2. **Food Module**
    - `FoodInventoryDashboard` (upcoming) should stitch together:
      - `FoodItemCard` grid fed by `listFoodInventory`.
-     - `FoodCountPane` to submit counts via `/api/inventory/food/receive`.
+     - `FoodCountPane` to submit counts via `/api/staff/inventory/food/receive`.
      - `FoodReceivingPane` & `FoodWasteModal` calling the receive/waste endpoints.
      - `FoodVendorPanel`, `FoodAutoReplenishPanel`, `FoodForecastPanel`, and `FoodStorageMapViewer` for contextual insights.
 
@@ -99,8 +99,8 @@ The following endpoints sit under `/api/inventory/*` and call Supabase RPC funct
 
 4. **Shared Panels**
    - `VendorInsightPanel` consumes `listVendorProfiles`.
-   - `AIInsightPanel` should display recommendations derived from `/api/inventory/health-report`.
-   - `InventoryNotesPanel` should hydrate from `listInventoryNotes` and eventually post to an `/api/inventory/notes` endpoint.
+   - `AIInsightPanel` should display recommendations derived from `/api/staff/inventory/health-report`.
+   - `InventoryNotesPanel` should hydrate from `listInventoryNotes` and eventually post to an `/api/staff/inventory/notes` endpoint.
 
 5. **Follow-up Roadmap**
    - Build the TSX components listed in the InventoryOS spec (Food/Alcohol sections) using the shared shell.

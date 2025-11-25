@@ -2,7 +2,7 @@
 
 import type { RealtimePostgresInsertPayload } from "@supabase/supabase-js";
 import { useEffect } from "react";
-import { supabaseBrowser } from "@/lib/supabaseBrowser";
+import { supabaseBrowser } from "@/lib/shared/supabaseBrowser";
 
 export function useReactiveVisuals() {
   useEffect(() => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { PosWorkspace } from "@/components/pos/PosWorkspace";
+import { PosWorkspace } from "@/apps/staff-console/shared/pos/PosWorkspace";
 
 export default function PosPage() {
   return (

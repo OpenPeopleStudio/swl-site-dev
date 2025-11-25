@@ -2,7 +2,7 @@
 
 import { startTransition, useCallback, useEffect, useState } from "react";
 import type { PostgrestError } from "@supabase/supabase-js";
-import { supabaseBrowser } from "@/lib/supabaseBrowser";
+import { supabaseBrowser } from "@/lib/shared/supabaseBrowser";
 
 export type StaffPresence = {
   id: string;

@@ -30,8 +30,8 @@ export default function AgentDashboard() {
     async function load() {
       try {
         const [taskRes, outputRes] = await Promise.all([
-          fetch("/api/codex/tasks"),
-          fetch("/api/codex/outputs"),
+          fetch("/api/owner/codex/tasks"),
+          fetch("/api/owner/codex/outputs"),
         ]);
 
         if (!taskRes.ok || !outputRes.ok) {

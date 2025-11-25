@@ -1,5 +1,5 @@
 import { listEventPipeline, type PrivateEvent } from "@/domains/events/lib/queries";
-import { StaffEventsBoard, type StaffEventCard, type EventLane } from "@/domains/staff/components/StaffEventsBoard";
+import { StaffEventsBoard, type StaffEventCard, type EventLane } from "@/apps/staff-console/foh/StaffEventsBoard";
 
 export default async function StaffEventsPage() {
   const events = await listEventPipeline(60);

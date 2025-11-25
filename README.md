@@ -91,7 +91,7 @@ Apply the schema locally or to your linked project via `supabase db push` (or `s
 src/app/
 ├── page.tsx            # Staff dashboard launcher
 ├── gate/page.tsx       # Auth gate
-├── api/gate/route.ts   # Supabase-backed login endpoint
+├── api/owner/gate/route.ts   # Supabase-backed login endpoint
 └── staff/              # Module surfaces (schedule, menu, inventory, reflection)
 src/proxy.ts            # Cookie guard for / and /staff/*
 src/components/staff/   # Shared Cortex UI components
@@ -104,7 +104,7 @@ src/components/staff/   # Shared Cortex UI components
 3. Configure the three environment variables above in Vercel (production + preview).
 4. `vercel --prod` to ship the dashboard.
 
-The production domain should remain `ai.snowwhitelaundry.co`. Ensure the Supabase service role key is treated as sensitive and never exposed to the browser—only the `/api/gate` route uses it server-side.
+The production domain should remain `ai.snowwhitelaundry.co`. Ensure the Supabase service role key is treated as sensitive and never exposed to the browser—only the `/api/owner/gate` route uses it server-side.
 
 ## Progressive Web App install
 

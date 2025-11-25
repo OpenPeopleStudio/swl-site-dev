@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabaseBrowser } from "@/lib/supabaseBrowser";
-import type { StaffIdentity } from "@/lib/getCurrentUser";
+import { supabaseBrowser } from "@/lib/shared/supabaseBrowser";
+import type { StaffIdentity } from "@/lib/shared/getCurrentUser";
 import { updatePresenceState } from "@/apps/presence/lib/presence";
 
 type ShiftLog = {

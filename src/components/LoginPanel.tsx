@@ -4,7 +4,7 @@ import type { CSSProperties } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { supabaseBrowser } from "@/lib/supabaseBrowser";
+import { supabaseBrowser } from "@/lib/shared/supabaseBrowser";
 
 type LoginPanelProps = {
   nextPath?: string;
@@ -169,7 +169,7 @@ export function LoginPanel({ nextPath, wakeSignal = 0 }: LoginPanelProps) {
   ) {
     setSubmitting(true);
     try {
-      const res = await fetch("/api/gate", {
+      const res = await fetch("/api/owner/gate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

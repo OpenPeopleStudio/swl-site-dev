@@ -1,11 +1,11 @@
 "use client";
 
-import { InventoryTopBar } from "@/domains/staff/inventory/InventoryTopBar";
-import { InventorySidebar } from "@/domains/staff/inventory/InventorySidebar";
-import { InventorySearchBar } from "@/domains/staff/inventory/InventorySearchBar";
-import { InventoryNotesPanel } from "@/domains/staff/inventory/InventoryNotesPanel";
-import { AIInsightPanel } from "@/domains/staff/inventory/AIInsightPanel";
-import { VendorInsightPanel } from "@/domains/staff/inventory/VendorInsightPanel";
+import { InventoryTopBar } from "@/apps/staff-console/boh/inventory/InventoryTopBar";
+import { InventorySidebar } from "@/apps/staff-console/boh/inventory/InventorySidebar";
+import { InventorySearchBar } from "@/apps/staff-console/boh/inventory/InventorySearchBar";
+import { InventoryNotesPanel } from "@/apps/staff-console/boh/inventory/InventoryNotesPanel";
+import { AIInsightPanel } from "@/apps/staff-console/boh/inventory/AIInsightPanel";
+import { VendorInsightPanel } from "@/apps/staff-console/boh/inventory/VendorInsightPanel";
 
 const sidebarSections = [
   {

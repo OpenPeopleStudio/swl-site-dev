@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabaseBrowser } from "@/lib/supabaseBrowser";
+import { supabaseBrowser } from "@/lib/shared/supabaseBrowser";
 
 const LABELS: Record<string, string> = {
   checking: "Checking auth…",

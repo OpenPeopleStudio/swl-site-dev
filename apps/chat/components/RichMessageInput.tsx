@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { supabaseBrowser } from "@/lib/supabaseBrowser";
+import { supabaseBrowser } from "@/lib/shared/supabaseBrowser";
 
 type RichMessageInputProps = {
   channelId?: string | null;

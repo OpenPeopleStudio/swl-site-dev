@@ -1,4 +1,3 @@
-export { worker } from "@/mocks/browser";
-export { server } from "@/mocks/server";
-export { posHandlers } from "@/mocks/handlers/pos";
-
+export { worker, server, sharedHandlers } from "@/mocks/shared";
+export { staffHandlers } from "@/mocks/staff";
+export { ownerHandlers } from "@/mocks/owner";

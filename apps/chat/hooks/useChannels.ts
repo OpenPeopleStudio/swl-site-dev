@@ -2,8 +2,8 @@
 
 import { startTransition, useCallback, useEffect, useState } from "react";
 import type { PostgrestError } from "@supabase/supabase-js";
-import { supabaseBrowser } from "@/lib/supabaseBrowser";
-import { looksLikeUuid, resolveChannelId } from "@/lib/getChannelId";
+import { supabaseBrowser } from "@/lib/shared/supabaseBrowser";
+import { looksLikeUuid, resolveChannelId } from "@/lib/shared/getChannelId";
 
 const DEFAULT_CHANNEL_IDENTIFIER =
   process.env.NEXT_PUBLIC_CHAT_CHANNEL_ID?.trim() || "global-chat";

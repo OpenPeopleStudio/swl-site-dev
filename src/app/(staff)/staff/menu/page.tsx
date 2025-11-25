@@ -1,7 +1,7 @@
 "use client";
 
 import type { ComponentProps } from "react";
-import { MenuBuilderWorkspace } from "@/domains/staff/menu/MenuBuilderWorkspace";
+import { MenuBuilderWorkspace } from "@/apps/staff-console/manager/MenuBuilderWorkspace";
 
 const workspaceState: ComponentProps<typeof MenuBuilderWorkspace> = {
   dishes: [

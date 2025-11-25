@@ -6,7 +6,7 @@ import ChatInput from "./ChatInput";
 import UserBadge from "@/shared/ui/UserBadge";
 import ShiftStatusButton from "./ShiftStatusButton";
 import { initPresence, teardownPresence } from "@/apps/presence/lib/presence";
-import { supabaseBrowser } from "@/lib/supabaseBrowser";
+import { supabaseBrowser } from "@/lib/shared/supabaseBrowser";
 
 type ChatBoxProps = {
   onNewMessage?: (message: { content?: string | null; user_id: string }) => void;

@@ -9,7 +9,7 @@ import {
 } from "react";
 import type { ReactNode } from "react";
 import { Inbox, Users, Image as ImageIcon } from "lucide-react";
-import { supabaseBrowser } from "@/lib/supabaseBrowser";
+import { supabaseBrowser } from "@/lib/shared/supabaseBrowser";
 import { ChatComposer } from "@/apps/chat/components/ChatComposer";
 import MediaModal from "@/apps/chat/components/MediaModal";
 import { useChannels } from "@/apps/chat/hooks/useChannels";

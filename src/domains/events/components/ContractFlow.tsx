@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { supabaseBrowser } from "@/lib/supabaseBrowser";
+import { supabaseBrowser } from "@/lib/shared/supabaseBrowser";
 import type { PrivateEvent } from "@/domains/events/lib/queries";
 
 type ContractFlowProps = {

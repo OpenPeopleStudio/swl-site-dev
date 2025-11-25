@@ -2,8 +2,8 @@ import {
   StaffReflectionBoard,
   type BoardReflection,
   type ReflectionPrompt,
-} from "@/domains/staff/components/StaffReflectionBoard";
-import { getSupabaseAdmin } from "@/lib/supabase";
+} from "@/apps/staff-console/boh/StaffReflectionBoard";
+import { getSupabaseAdmin } from "@/lib/shared/supabase";
 
 const FALLBACK_REFLECTIONS: BoardReflection[] = [
   {

@@ -5,12 +5,12 @@ import type {
   SupabaseClient,
   RealtimePostgresInsertPayload,
 } from "@supabase/supabase-js";
-import { supabaseBrowser } from "@/lib/supabaseBrowser";
+import { supabaseBrowser } from "@/lib/shared/supabaseBrowser";
 import {
   getCurrentUser,
   type StaffIdentity,
-} from "@/lib/getCurrentUser";
-import { resolveChannelId } from "@/lib/getChannelId";
+} from "@/lib/shared/getCurrentUser";
+import { resolveChannelId } from "@/lib/shared/getChannelId";
 
 export type ChatMessage = {
   id: string;

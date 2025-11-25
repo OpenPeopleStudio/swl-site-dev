@@ -36,7 +36,7 @@ export function MockServiceWorkerGate() {
 
     let stopped = false;
 
-    import("@/mocks/browser")
+    import("@/mocks/shared/browser")
       .then(({ worker }) =>
         worker.start({
           serviceWorker: { url: "/mockServiceWorker.js" },

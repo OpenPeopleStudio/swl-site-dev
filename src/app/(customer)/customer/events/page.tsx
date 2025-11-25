@@ -8,9 +8,9 @@ import {
 import { ReserveOpeningWeekForm } from "@/domains/customer/components/ReserveOpeningWeekForm";
 import { CustomerAiHandbook } from "@/domains/customer/components/CustomerAiHandbook";
 import type { ReserveFormState } from "@/domains/customer/types";
-import { getSupabaseAdmin } from "@/lib/supabase";
+import { getSupabaseAdmin } from "@/lib/shared/supabase";
 import { listEventsForGuest } from "@/domains/events/lib/queries";
-import { getSessionFromCookies } from "@/lib/session";
+import { getSessionFromCookies } from "@/lib/shared/session";
 
 function formatDate(value?: string | null) {
   if (!value) return "TBD";

@@ -1,8 +1,8 @@
 import { Buffer } from "node:buffer";
 import { revalidatePath } from "next/cache";
 import type { PrivateEvent } from "@/domains/events/lib/queries";
-import { getSupabaseAdmin } from "@/lib/supabase";
-import { getOpenAIClient } from "@/lib/openai";
+import { getSupabaseAdmin } from "@/lib/shared/supabase";
+import { getOpenAIClient } from "@/lib/owner/openai";
 import { renderProposalPdf } from "@/domains/events/lib/pdf";
 
 const MODEL = process.env.OPENAI_GPT5_MODEL ?? "gpt-4o-mini";
