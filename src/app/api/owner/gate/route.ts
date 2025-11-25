@@ -7,6 +7,46 @@ import {
   type SessionPayload,
 } from "@/lib/shared/session";
 
+async function logGateAuth(
+  supabase: ReturnType<typeof getSupabaseAdmin>,
+  params: {
+    email: string;
+    intent: "login" | "register" | "password_reset";
+    success: boolean;
+    role?: string;
+    user_id?: string;
+    ip_address?: string;
+    user_agent?: string;
+    error_message?: string;
+  },
+) {
+  try {
+    await supabase.from("gate_auth_log").insert({
+      email: params.email.toLowerCase(),
+      intent: params.intent,
+      success: params.success,
+      role: params.role || null,
+      user_id: params.user_id || null,
+      ip_address: params.ip_address || null,
+      user_agent: params.user_agent || null,
+      error_message: params.error_message || null,
+    });
+  } catch (error) {
+    // Don't fail auth if logging fails, but log the error
+    console.error("Failed to log gate auth:", error);
+  }
+}
+
+function getClientInfo(request: Request): { ip_address?: string; user_agent?: string } {
+  const headers = request.headers;
+  const ip_address =
+    headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    headers.get("x-real-ip") ||
+    undefined;
+  const user_agent = headers.get("user-agent") || undefined;
+  return { ip_address, user_agent };
+}
+
 const COOKIE_DOMAIN = process.env.AUTH_COOKIE_DOMAIN;
 
 type StaffAccessRecord = {
@@ -60,6 +100,10 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const clientInfo = getClientInfo(request);
+  let loggedEmail: string | undefined;
+  let loggedIntent: "login" | "register" | "password_reset" = "login";
+
   try {
     const { email, password, intent, newPassword } = (await request.json()) as {
       email?: string;
@@ -75,17 +119,34 @@ export async function POST(request: Request) {
       );
     }
 
+    loggedEmail = email.toLowerCase();
+    loggedIntent = intent === "register" ? "register" : newPassword ? "password_reset" : "login";
+
     const supabase = getSupabaseAdmin();
     const existingUser = await findSupabaseUserByEmail(supabase, email);
 
     if (intent === "register") {
       if (existingUser) {
+        await logGateAuth(supabase, {
+          email: loggedEmail,
+          intent: "register",
+          success: false,
+          error_message: "Account already exists",
+          ...clientInfo,
+        });
         return NextResponse.json(
           { error: "Account already exists" },
           { status: 409 },
         );
       }
       if (!password) {
+        await logGateAuth(supabase, {
+          email: loggedEmail,
+          intent: "register",
+          success: false,
+          error_message: "Password is required",
+          ...clientInfo,
+        });
         return NextResponse.json(
           { error: "Password is required to create an account" },
           { status: 400 },
@@ -93,17 +154,40 @@ export async function POST(request: Request) {
       }
       try {
         await ensureSupabaseUser(email, password, "customer");
+        const createdUser = await findSupabaseUserByEmail(supabase, email);
+        await logGateAuth(supabase, {
+          email: loggedEmail,
+          intent: "register",
+          success: true,
+          role: "customer",
+          user_id: createdUser?.id,
+          ...clientInfo,
+        });
+        return buildAuthCookieResponse({ email, role: "customer" });
       } catch (syncError) {
         console.error(syncError);
+        await logGateAuth(supabase, {
+          email: loggedEmail,
+          intent: "register",
+          success: false,
+          error_message: syncError instanceof Error ? syncError.message : "Unable to create account",
+          ...clientInfo,
+        });
         return NextResponse.json(
           { error: "Unable to create account" },
           { status: 500 },
         );
       }
-      return buildAuthCookieResponse({ email, role: "customer" });
     }
 
     if (!existingUser || !password) {
+      await logGateAuth(supabase, {
+        email: loggedEmail,
+        intent: loggedIntent,
+        success: false,
+        error_message: existingUser ? "Password required" : "Account not found",
+        ...clientInfo,
+      });
       return NextResponse.json(
         { error: "Account not found" },
         { status: 404 },
@@ -117,6 +201,14 @@ export async function POST(request: Request) {
     });
 
     if (authError || !authData.user) {
+      await logGateAuth(supabase, {
+        email: loggedEmail,
+        intent: loggedIntent,
+        success: false,
+        error_message: authError?.message || "Invalid password",
+        user_id: existingUser?.id,
+        ...clientInfo,
+      });
       return NextResponse.json(
         { error: "Invalid password" },
         { status: 401 },
@@ -128,6 +220,14 @@ export async function POST(request: Request) {
     // Handle password reset if needed
     if (newPassword) {
       if (newPassword.length < 8) {
+        await logGateAuth(supabase, {
+          email: loggedEmail,
+          intent: "password_reset",
+          success: false,
+          error_message: "New password must be at least 8 characters long",
+          user_id: existingUser.id,
+          ...clientInfo,
+        });
         return NextResponse.json(
           { error: "New password must be at least 8 characters long." },
           { status: 400 },
@@ -135,8 +235,24 @@ export async function POST(request: Request) {
       }
       try {
         await ensureSupabaseUser(email, newPassword, resolvedRole);
+        await logGateAuth(supabase, {
+          email: loggedEmail,
+          intent: "password_reset",
+          success: true,
+          role: resolvedRole,
+          user_id: existingUser.id,
+          ...clientInfo,
+        });
       } catch (syncError) {
         console.error(syncError);
+        await logGateAuth(supabase, {
+          email: loggedEmail,
+          intent: "password_reset",
+          success: false,
+          error_message: syncError instanceof Error ? syncError.message : "Unable to reset password",
+          user_id: existingUser.id,
+          ...clientInfo,
+        });
         return NextResponse.json(
           { error: "Unable to reset password" },
           { status: 500 },
@@ -144,12 +260,32 @@ export async function POST(request: Request) {
       }
     }
 
+    // Log successful login
+    await logGateAuth(supabase, {
+      email: loggedEmail,
+      intent: loggedIntent,
+      success: true,
+      role: resolvedRole,
+      user_id: existingUser.id,
+      ...clientInfo,
+    });
+
     return buildAuthCookieResponse({
       email,
       role: resolvedRole,
     });
   } catch (err) {
     console.error("Gate error", err);
+    if (loggedEmail) {
+      const supabase = getSupabaseAdmin();
+      await logGateAuth(supabase, {
+        email: loggedEmail,
+        intent: loggedIntent,
+        success: false,
+        error_message: err instanceof Error ? err.message : "Access denied",
+        ...clientInfo,
+      });
+    }
     return NextResponse.json({ error: "Access denied" }, { status: 401 });
   }
 }
