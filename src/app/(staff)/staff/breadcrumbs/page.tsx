@@ -81,14 +81,14 @@ export default function BreadcrumbGenerator() {
 
   return (
     <SiteShell>
-      <div className="mx-auto px-8 sm:px-12 md:px-16 lg:px-24 xl:px-32 py-20 sm:py-24 md:py-32 lg:py-40" style={{ maxWidth: "1200px" }}>
+      <div className="mx-auto px-8 sm:px-12 md:px-16 lg:px-24 xl:px-32 py-20 sm:py-24 md:py-32 lg:py-40" style={{ maxWidth: "1400px" }}>
         <PageHeader
           title="Breadcrumb Creator"
           subtitle="Overshare Engine"
         />
 
         <GlassSection delay={0.3}>
-          <p className="text-lg sm:text-xl text-white/60 leading-relaxed mb-8 sm:mb-10">
+          <p className="text-lg sm:text-xl md:text-2xl text-white/60 leading-relaxed mb-10 sm:mb-12 md:mb-16">
             Capture moments, decisions, philosophies, and systems. Each contribution becomes a structured,
             AI-ingestible breadcrumb in the Snow White Laundry knowledge archive.
           </p>
@@ -96,23 +96,23 @@ export default function BreadcrumbGenerator() {
           <GlassForm>
             {/* Category Selection */}
             <div>
-              <label className="mb-4 block text-xs sm:text-sm uppercase tracking-[0.2em] text-white/40 font-light">
+              <label className="mb-6 sm:mb-8 block text-xs sm:text-sm uppercase tracking-[0.2em] text-white/40 font-light">
                 Category
               </label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
                 {CATEGORIES.map((cat) => (
                   <button
                     key={cat.value}
                     type="button"
                     onClick={() => setCategory(cat.value)}
-                    className={`group relative overflow-hidden rounded-lg border p-4 text-left transition-all duration-400 ${
+                    className={`group relative overflow-hidden rounded-lg border p-5 sm:p-6 md:p-8 text-left transition-all duration-400 ${
                       category === cat.value
                         ? "border-white/30 bg-white/[0.05] text-white/90"
                         : "border-white/10 bg-white/[0.02] text-white/50 hover:border-white/20 hover:text-white/70"
                     }`}
                   >
-                    <span className="block text-sm font-light mb-1">{cat.label}</span>
-                    <span className="block text-[10px] uppercase tracking-wider text-white/30">
+                    <span className="block text-sm sm:text-base font-light mb-2 sm:mb-3">{cat.label}</span>
+                    <span className="block text-xs sm:text-sm uppercase tracking-wider text-white/30">
                       {cat.description}
                     </span>
                   </button>

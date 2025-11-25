@@ -110,6 +110,37 @@ Return ONLY the completed markdown file, no explanations.`;
     return NextResponse.json({ markdown });
   } catch (error) {
     console.error("Breadcrumb generation error:", error);
+    
+    // Provide more helpful error messages
+    if (error instanceof Error) {
+      if (error.message.includes("OPENAI_API_KEY")) {
+        return NextResponse.json(
+          { error: "OpenAI API key not configured. Please set OPENAI_API_KEY in your environment variables." },
+          { status: 500 },
+        );
+      }
+      if (error.message.includes("401") || error.message.includes("Incorrect API key")) {
+        return NextResponse.json(
+          { 
+            error: "Invalid OpenAI API key. Please check your OPENAI_API_KEY in .env.local. " +
+                   "Make sure it starts with 'sk-' and doesn't have extra quotes or whitespace. " +
+                   "Get a new key at https://platform.openai.com/account/api-keys"
+          },
+          { status: 500 },
+        );
+      }
+      if (error.message.includes("ENOENT")) {
+        return NextResponse.json(
+          { error: `Missing required file: ${error.message.includes("ENGINE_PROMPT") ? "ENGINE_PROMPT.md" : "_TEMPLATE.md"}` },
+          { status: 500 },
+        );
+      }
+      return NextResponse.json(
+        { error: `Failed to generate breadcrumb: ${error.message}` },
+        { status: 500 },
+      );
+    }
+    
     return NextResponse.json(
       { error: "Failed to generate breadcrumb" },
       { status: 500 },

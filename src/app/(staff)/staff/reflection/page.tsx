@@ -1,9 +1,8 @@
-import {
-  StaffReflectionBoard,
-  type BoardReflection,
-  type ReflectionPrompt,
-} from "@/apps/staff-console/boh/StaffReflectionBoard";
+import { PageHeader } from "@/components/design/PageHeader";
+import { GlassSection } from "@/components/design/GlassSection";
+import type { BoardReflection, ReflectionPrompt } from "@/apps/staff-console/boh/StaffReflectionBoard";
 import { getSupabaseAdmin } from "@/lib/shared/supabase";
+import { ReflectionPageClient } from "./ReflectionPageClient";
 
 const FALLBACK_REFLECTIONS: BoardReflection[] = [
   {
@@ -70,9 +69,21 @@ async function loadReflections(): Promise<BoardReflection[]> {
 
 export default async function ReflectionPage() {
   const reflections = await loadReflections();
+
   return (
-    <div className="flex w-full flex-col gap-6 text-white">
-      <StaffReflectionBoard initialReflections={reflections} prompts={prompts} />
+    <div className="mx-auto px-8 sm:px-12 md:px-16 lg:px-24 xl:px-32 py-20 sm:py-24 md:py-32 lg:py-40" style={{ maxWidth: "1400px" }}>
+      <PageHeader
+        title="Reflection"
+        subtitle="Daily System Feedback"
+      />
+
+      <GlassSection delay={0.3}>
+        <p className="text-lg sm:text-xl md:text-2xl text-white/60 leading-relaxed mb-10 sm:mb-12 md:mb-16">
+          Capture daily system feedback so tomorrow launches on time. Document moments, decisions, and improvements.
+        </p>
+
+        <ReflectionPageClient reflections={reflections} prompts={prompts} />
+      </GlassSection>
     </div>
   );
 }

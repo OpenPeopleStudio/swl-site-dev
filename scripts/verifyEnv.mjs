@@ -29,6 +29,10 @@ const required = [
   "SUPABASE_SERVICE_ROLE_KEY",
 ];
 
+const optional = [
+  "OPENAI_API_KEY", // Required for breadcrumb generation
+];
+
 let failed = false;
 
 for (const key of required) {
@@ -42,4 +46,30 @@ if (failed) {
   process.exit(1);
 } else {
   console.log("✅ Environment variables verified.");
+  
+  // Check optional but important vars
+  for (const key of optional) {
+    if (!process.env[key]) {
+      console.warn(`⚠️  Missing optional env var: ${key}`);
+      if (key === "OPENAI_API_KEY") {
+        console.warn("   This is required for breadcrumb generation to work.");
+      }
+    } else if (key === "OPENAI_API_KEY") {
+      // Validate OpenAI API key format
+      const apiKey = process.env[key].trim().replace(/^["']|["']$/g, "");
+      if (!apiKey.startsWith("sk-")) {
+        console.error(`❌ Invalid OpenAI API key format: ${key}`);
+        console.error(`   Key should start with "sk-" but starts with "${apiKey.substring(0, Math.min(10, apiKey.length))}..."`);
+        console.error(`   Please check your .env.local file and ensure the key is correct.`);
+        console.error(`   Get a new key at https://platform.openai.com/account/api-keys`);
+        failed = true;
+      } else {
+        console.log(`✅ ${key} is set and format looks valid.`);
+      }
+    }
+  }
+  
+  if (failed) {
+    process.exit(1);
+  }
 }
