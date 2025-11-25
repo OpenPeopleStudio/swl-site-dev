@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import Link from "next/link";
+import { StarField } from "@/components/design/StarField";
 
 export const dynamic = "force-static";
 export const revalidate = 3600; // Revalidate every hour
@@ -60,13 +61,7 @@ export default function OvershareIndex() {
 
   return (
     <main className="relative min-h-screen overflow-hidden text-white" style={{ background: "#000000" }}>
-      {/* Background layers */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(26,26,46,0.3)_0%,transparent_50%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(13,17,23,0.2)_0%,transparent_40%)]" />
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 bg-[url('/stars.svg')] opacity-10"
-      />
+      <StarField />
 
       <div className="relative z-10 mx-auto px-8 sm:px-12 md:px-16 lg:px-24 xl:px-32 py-20 sm:py-24 md:py-32 lg:py-40" style={{ maxWidth: "1600px" }}>
         {/* Header */}

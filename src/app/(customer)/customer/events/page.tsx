@@ -1,6 +1,4 @@
-import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import {
   CustomerEventWizard,
   type WizardActionState,
@@ -9,8 +7,6 @@ import { ReserveOpeningWeekForm } from "@/domains/customer/components/ReserveOpe
 import { CustomerAiHandbook } from "@/domains/customer/components/CustomerAiHandbook";
 import type { ReserveFormState } from "@/domains/customer/types";
 import { getSupabaseAdmin } from "@/lib/shared/supabase";
-import { listEventsForGuest } from "@/domains/events/lib/queries";
-import { getSessionFromCookies } from "@/lib/shared/session";
 
 function formatDate(value?: string | null) {
   if (!value) return "TBD";
@@ -25,12 +21,19 @@ function formatDate(value?: string | null) {
 }
 
 export default async function CustomerEventsPage() {
-  const session = await getSessionFromCookies();
-  if (!session) {
-    redirect("/gate?next=/customer/events");
-  }
-
-  const events = await listEventsForGuest(session.email);
+  // No authentication required - customers can browse freely
+  const events: Array<{
+    id: string;
+    guest_name: string | null;
+    guest_email: string | null;
+    event_type: string | null;
+    preferred_date: string | null;
+    party_size: number | null;
+    status: string;
+    proposal_pdf_url: string | null;
+    deposit_paid: boolean | null;
+    special_requests: string | null;
+  }> = [];
 
   const initialActionState: WizardActionState = { status: "idle" };
   const reserveInitialState: ReserveFormState = { status: "idle" };
@@ -41,20 +44,29 @@ export default async function CustomerEventsPage() {
   ): Promise<WizardActionState> {
     "use server";
     try {
-      const currentSession = await getSessionFromCookies();
-      if (!currentSession) {
-        redirect("/gate?next=/customer/events");
+      const guestEmail = formData.get("guest_email")?.toString()?.trim();
+      const guestName = formData.get("guest_name")?.toString()?.trim();
+      
+      if (!guestEmail) {
+        return {
+          status: "error",
+          message: "Email address is required.",
+        };
       }
+      
+      if (!guestName) {
+        return {
+          status: "error",
+          message: "Host name is required.",
+        };
+      }
+      
       const supabase = getSupabaseAdmin();
-      const supabaseUserId = await ensureSupabaseUserId(
-        currentSession.email,
-        supabase,
-      );
       const payload = {
-        user_id: supabaseUserId,
-        guest_name: formData.get("guest_name")?.toString() ?? "Guest",
+        user_id: null,
+        guest_name: guestName,
         organization: null,
-        guest_email: currentSession.email,
+        guest_email: guestEmail,
         event_type:
           formData.get("event_type")?.toString() ?? "Private Experience",
         party_size: Number(formData.get("party_size")) || null,
@@ -77,7 +89,7 @@ export default async function CustomerEventsPage() {
         throw error;
       }
 
-      await notifyEventTeam(currentSession.email, payload);
+      await notifyEventTeam(guestEmail, payload);
       revalidatePath("/customer/events");
       return {
         status: "success",
@@ -118,7 +130,7 @@ export default async function CustomerEventsPage() {
         </p>
         <CustomerEventWizard
           action={handleCreate}
-          defaultName={session.email.split("@")[0]}
+          defaultName=""
           initialState={initialActionState}
         />
       </section>
@@ -135,7 +147,7 @@ export default async function CustomerEventsPage() {
         />
       </section>
 
-        <CustomerAiHandbook events={events} guestEmail={session.email} />
+        {events.length > 0 && <CustomerAiHandbook events={events} guestEmail="" />}
 
         <section className="space-y-6">
           {events.map((event) => (
@@ -222,7 +234,7 @@ export default async function CustomerEventsPage() {
         {events.length === 0 && (
           <div className="rounded-3xl border border-white/10 bg-white/[0.02] p-6 text-center text-white/70">
             <p>
-              No events are linked to <strong>{session.email}</strong> yet.
+              Submit a request using the form above to get started. We'll email you with a proposal once we review your details.
             </p>
             <p className="mt-2 text-sm">
               Submit the form above or reach out to tom@snowwhitelaundry.co and
@@ -248,37 +260,6 @@ function composeSpecialRequests(formData: FormData) {
   return sections.length ? sections.join("\n\n") : null;
 }
 
-async function ensureSupabaseUserId(
-  email: string,
-  supabase: ReturnType<typeof getSupabaseAdmin>,
-) {
-  const lower = email.toLowerCase();
-  const { data, error } = await supabase.auth.admin.listUsers({
-    page: 1,
-    perPage: 1000,
-  });
-  if (error) {
-    throw new Error("Unable to list Supabase users");
-  }
-  let user =
-    data.users?.find(
-      (candidate) => candidate.email?.toLowerCase() === lower,
-    ) ?? null;
-  if (!user) {
-    const { data: created, error: createError } =
-      await supabase.auth.admin.createUser({
-        email,
-        email_confirm: true,
-        password: randomUUID(),
-        user_metadata: { source: "customer-portal" },
-      });
-    if (createError || !created?.user) {
-      throw new Error("Unable to create Supabase Auth user");
-    }
-    user = created.user;
-  }
-  return user.id;
-}
 
 async function notifyEventTeam(
   guestEmail: string,
@@ -360,13 +341,20 @@ async function createEarlyReservation(
 ): Promise<ReserveFormState> {
   "use server";
   try {
-    const session = await getSessionFromCookies();
-    if (!session) {
-      redirect("/gate?next=/customer/events");
+    const email = formData.get("email")?.toString()?.trim();
+    const guestName = formData.get("guest_name")?.toString()?.trim();
+    
+    if (!email) {
+      return {
+        status: "error",
+        message: "Email address is required.",
+      };
     }
+    
     const supabase = getSupabaseAdmin();
     const payload = {
-      email: session.email,
+      email: email,
+      guest_name: guestName ?? null,
       preferred_date: formData.get("opening_date")?.toString() ?? null,
       party_size: Number(formData.get("opening_party")) || null,
       notes: formData.get("opening_notes")?.toString() ?? null,

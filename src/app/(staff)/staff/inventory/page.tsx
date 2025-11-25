@@ -138,71 +138,70 @@ const summaryTiles = [
 
 export default function InventoryPage() {
   return (
-    <div className="mx-auto px-8 sm:px-12 md:px-16 lg:px-24 xl:px-32 py-20 sm:py-24 md:py-32 lg:py-40" style={{ maxWidth: "1400px" }}>
+    <div className="mx-auto px-4 sm:px-6 md:px-8 lg:px-12 py-8 sm:py-12 md:py-16" style={{ maxWidth: "1800px" }}>
       <PageHeader
         title="Inventory"
         subtitle="InventoryOS"
       />
 
       <GlassSection delay={0.3}>
-        <p className="text-lg sm:text-xl md:text-2xl text-white/60 leading-relaxed mb-10 sm:mb-12 md:mb-16">
+        <p className="text-base sm:text-lg md:text-xl text-white/60 leading-relaxed mb-6 sm:mb-8">
           Monitor stock levels, predict shortages, and trigger rush orders. Track vendor performance and automation status.
         </p>
 
-        <div className="space-y-12 sm:space-y-16 md:space-y-20">
+        <div className="space-y-6 sm:space-y-8">
           <InventoryTopBar title="InventoryOS" timestamp="Synced 14:32" alerts={alertChips} />
           
-          <div className="grid gap-6 sm:gap-8 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-3">
             {summaryTiles.map((tile) => (
-              <div key={tile.id} className="rounded-2xl border border-white/10 bg-black/25 p-6 sm:p-8">
-                <p className="text-xs sm:text-sm uppercase tracking-[0.4em] text-white/50">{tile.label}</p>
-                <p className="mt-4 sm:mt-6 text-3xl sm:text-4xl md:text-5xl font-light">{tile.value}</p>
-                <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-white/60">{tile.detail}</p>
+              <div key={tile.id} className="rounded-2xl border border-white/10 bg-black/25 p-4 sm:p-5">
+                <p className="text-xs uppercase tracking-[0.4em] text-white/50">{tile.label}</p>
+                <p className="mt-3 text-3xl sm:text-4xl font-light">{tile.value}</p>
+                <p className="mt-1 text-xs text-white/60">{tile.detail}</p>
               </div>
             ))}
           </div>
 
-          <div className="flex flex-col gap-8 sm:gap-10 md:gap-12 xl:flex-row">
-            <InventorySidebar sections={sidebarSections} footerText="Auto-syncs every hour via Supabase functions." />
-            <div className="flex-1 space-y-8 sm:space-y-10 md:space-y-12">
-              <InventorySearchBar dataHints={hintChips} />
-              <div className="grid gap-8 sm:gap-10 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,0.9fr)]">
-                <InventoryNotesPanel notes={noteFeed} />
-                <AIInsightPanel insights={insightItems} />
-              </div>
-              <div className="grid gap-8 sm:gap-10 lg:grid-cols-3">
-                {storageMetrics.map((metric) => (
-                  <section
-                    key={metric.id}
-                    className="rounded-3xl border border-white/10 bg-white/5 p-6 sm:p-8 md:p-10 shadow-[0_20px_60px_rgba(0,0,0,0.45)]"
-                  >
-                    <p className="text-xs sm:text-sm uppercase tracking-[0.4em] text-white/40">{metric.title}</p>
-                    <p className="mt-4 sm:mt-6 text-4xl sm:text-5xl md:text-6xl font-light">{metric.level}%</p>
-                    <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-white/60">{metric.eta}</p>
-                    <p className="mt-4 sm:mt-6 text-sm sm:text-base text-white/70">{metric.note}</p>
-                  </section>
-                ))}
-              </div>
-              <section className="rounded-3xl border border-dashed border-white/20 bg-white/0 p-6 sm:p-8 md:p-10 text-sm sm:text-base text-white/60">
-                <p>
-                  Need the granular dashboard? Jump into{" "}
-                  <span className="text-white">Food InventoryOS</span> for live Supabase data, auto-replenish rituals,
-                  and vendor telemetry.
-                </p>
-              </section>
-            </div>
-            <div className="w-full space-y-8 sm:space-y-10 xl:max-w-sm">
-              <VendorInsightPanel vendors={vendors} />
-              <section className="rounded-3xl border border-white/10 bg-gradient-to-br from-[#14182c] to-[#05070f] p-6 sm:p-8 md:p-10 text-sm sm:text-base text-white/70 shadow-[0_20px_60px_rgba(0,0,0,0.45)]">
-                <p className="text-xs sm:text-sm uppercase tracking-[0.4em] text-white/40">Next Checks</p>
-                <ul className="mt-4 sm:mt-6 space-y-3 sm:space-y-4">
-                  <li>· Confirm langoustine reserve pull (14:00)</li>
-                  <li>· Update allergen badges after Prelude push</li>
-                  <li>· Archive Nord drift log for owner review</li>
-                </ul>
-              </section>
-            </div>
+      <div className="flex flex-col gap-4 sm:gap-6 xl:flex-row">
+        <InventorySidebar sections={sidebarSections} footerText="Auto-syncs every hour via Supabase functions." />
+        <div className="flex-1 space-y-4 sm:space-y-6">
+          <InventorySearchBar dataHints={hintChips} />
+          <div className="grid gap-4 sm:gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,0.9fr)]">
+            <InventoryNotesPanel notes={noteFeed} />
+            <AIInsightPanel insights={insightItems} />
           </div>
+          <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
+            {storageMetrics.map((metric) => (
+              <section
+                key={metric.id}
+                className="rounded-3xl border border-white/10 bg-white/5 p-4 sm:p-5 shadow-[0_20px_60px_rgba(0,0,0,0.45)]"
+              >
+                <p className="text-xs uppercase tracking-[0.4em] text-white/40">{metric.title}</p>
+                <p className="mt-3 text-4xl sm:text-5xl font-light">{metric.level}%</p>
+                <p className="mt-1 text-xs text-white/60">{metric.eta}</p>
+                <p className="mt-3 text-sm text-white/70">{metric.note}</p>
+              </section>
+            ))}
+          </div>
+          <section className="rounded-3xl border border-dashed border-white/20 bg-white/0 p-4 sm:p-5 text-sm text-white/60">
+            <p>
+              Need the granular dashboard? Jump into{" "}
+              <span className="text-white">Food InventoryOS</span> for live Supabase data, auto-replenish rituals, and vendor telemetry.
+            </p>
+          </section>
+        </div>
+        <div className="w-full space-y-4 sm:space-y-6 xl:max-w-sm">
+          <VendorInsightPanel vendors={vendors} />
+          <section className="rounded-3xl border border-white/10 bg-gradient-to-br from-[#14182c] to-[#05070f] p-4 sm:p-5 text-sm text-white/70 shadow-[0_20px_60px_rgba(0,0,0,0.45)]">
+            <p className="text-xs uppercase tracking-[0.4em] text-white/40">Next Checks</p>
+            <ul className="mt-3 space-y-2">
+              <li>· Confirm langoustine reserve pull (14:00)</li>
+              <li>· Update allergen badges after Prelude push</li>
+              <li>· Archive Nord drift log for owner review</li>
+            </ul>
+          </section>
+        </div>
+      </div>
         </div>
       </GlassSection>
     </div>

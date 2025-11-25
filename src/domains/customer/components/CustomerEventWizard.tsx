@@ -28,6 +28,7 @@ type WizardState = {
   party_size: string;
   special_requests: string;
   guest_name: string;
+  guest_email: string;
   budget_range: string;
 };
 
@@ -54,6 +55,7 @@ const INITIAL_STATE = (defaultName: string): WizardState => ({
   party_size: "",
   special_requests: "",
   guest_name: defaultName,
+  guest_email: "",
   budget_range: "",
 });
 
@@ -91,6 +93,7 @@ export function CustomerEventWizard({
       },
       { label: "Budget", value: state.budget_range || "Custom" },
       { label: "Host Name", value: state.guest_name || "Guest" },
+      { label: "Email", value: state.guest_email || "Not provided" },
     ],
     [state],
   );
@@ -287,6 +290,18 @@ export function CustomerEventWizard({
                 value={state.guest_name}
                 onChange={(event) => update("guest_name", event.target.value)}
                 className="mt-2 w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none focus:border-[#2A63FF]"
+                required
+              />
+            </label>
+            <label className="text-sm text-white/70">
+              Email Address
+              <input
+                type="email"
+                value={state.guest_email}
+                onChange={(event) => update("guest_email", event.target.value)}
+                placeholder="your@email.com"
+                className="mt-2 w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none focus:border-[#2A63FF]"
+                required
               />
             </label>
             <label className="text-sm text-white/70">

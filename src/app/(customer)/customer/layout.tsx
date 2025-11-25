@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { OpenPeopleFooter } from "@/components/OpenPeopleFooter";
+import { StarField } from "@/components/design/StarField";
 
 const navItems = [
   { label: "Home", href: "/customer" },
@@ -17,14 +18,8 @@ export default function CustomerLayout({ children }: { children: ReactNode }) {
   const drawerId = "customer-nav-drawer";
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#0a0a0f] text-white">
-      {/* Background layers */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,#1a1a2e_0%,transparent_50%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,#0d1117_0%,transparent_40%)]" />
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 bg-[url('/stars.svg')] opacity-20"
-      />
+    <div className="relative min-h-screen overflow-hidden text-white" style={{ background: "#000000" }}>
+      <StarField />
       <main className="relative z-10 mx-auto w-full max-w-5xl px-6 py-16 sm:px-12 sm:py-24">
         {/* Navigation */}
         <header className="mb-12 rounded-3xl border border-white/10 bg-white/[0.02] px-6 py-5 backdrop-blur-sm">
@@ -73,7 +68,7 @@ export default function CustomerLayout({ children }: { children: ReactNode }) {
                       onClick={() => setNavOpen(false)}
                       className={`flex min-w-[120px] flex-1 items-center justify-center rounded-2xl border px-4 py-2 text-center transition sm:min-w-0 ${
                         isActive
-                          ? "border-white/80 bg-white/15 text-white shadow-[0_10px_35px_rgba(42,99,255,0.35)]"
+                          ? "border-white/80 bg-white/15 text-white shadow-[0_10px_35px_rgba(255,255,255,0.15)]"
                           : "border-white/10 bg-white/5 text-white/70 hover:border-white/40 hover:text-white"
                       }`}
                     >

@@ -21,6 +21,8 @@ type Props = {
 export function ReserveOpeningWeekForm({ action, initialState }: Props) {
   const [selectedDate, setSelectedDate] = useState(OPENING_DATES[0].value);
   const [partySize, setPartySize] = useState(4);
+  const [guestName, setGuestName] = useState("");
+  const [email, setEmail] = useState("");
   const [state, formAction] = useFormState(action, initialState);
 
   const selectedLabel = useMemo(
@@ -48,6 +50,33 @@ export function ReserveOpeningWeekForm({ action, initialState }: Props) {
     <form action={formAction} className="mt-6 space-y-6">
       <input type="hidden" name="opening_date" value={selectedDate} />
       <input type="hidden" name="opening_party" value={partySize} />
+      <input type="hidden" name="email" value={email} />
+      <input type="hidden" name="guest_name" value={guestName} />
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <label className="block text-sm text-white/70">
+          Your Name
+          <input
+            type="text"
+            value={guestName}
+            onChange={(e) => setGuestName(e.target.value)}
+            placeholder="John Doe"
+            className="mt-2 w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none focus:border-[#2A63FF]"
+            required
+          />
+        </label>
+        <label className="block text-sm text-white/70">
+          Email Address
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="your@email.com"
+            className="mt-2 w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none focus:border-[#2A63FF]"
+            required
+          />
+        </label>
+      </div>
 
       <div>
         <p className="text-sm uppercase tracking-[0.3em] text-white/50">Select evening</p>

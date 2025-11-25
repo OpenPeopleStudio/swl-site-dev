@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
 import { useState, useSyncExternalStore, type ReactNode } from "react";
 import BootSequence from "@/components/boot/BootSequence";
+import { StarField } from "@/components/design/StarField";
 
 const navItems = [
   { label: "Home", href: "/staff" },
@@ -45,18 +45,12 @@ export default function StaffLayout({ children }: { children: ReactNode }) {
     <>
       {bootState === "show" && <BootSequence onFinish={handleBootComplete} />}
       <main
-        className="staff-shell relative min-h-screen overflow-hidden bg-space-gradient text-white"
+        className="staff-shell relative min-h-screen overflow-hidden text-white"
+        style={{ background: "#000000" }}
         aria-hidden={bootState === "show"}
         data-shell="staff"
       >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,#1b1f33,transparent_70%)]" />
-
-      <motion.div
-        aria-hidden="true"
-        className="parallax-stars absolute inset-0 bg-[url('/stars.svg')] opacity-30"
-        animate={{ backgroundPositionY: ["0%", "100%"] }}
-        transition={{ repeat: Infinity, duration: 120, ease: "linear" }}
-      />
+      <StarField />
 
       <div className="staff-shell__inner relative z-10 flex min-h-screen flex-col items-center gap-12 sm:gap-16 md:gap-20 px-6 sm:px-12 md:px-16 lg:px-24 xl:px-32 py-12 sm:py-16 md:py-20 lg:py-24">
         <header className="glass-surface panel-outline w-full max-w-7xl rounded-[32px] border border-white/10 bg-white/5 px-8 sm:px-10 md:px-12 lg:px-16 py-8 sm:py-10 md:py-12 backdrop-blur-xl">
@@ -108,7 +102,7 @@ export default function StaffLayout({ children }: { children: ReactNode }) {
                       onClick={() => setNavOpen(false)}
                       className={`flex min-w-[120px] flex-1 items-center justify-center rounded-2xl border px-6 sm:px-8 py-3 sm:py-4 text-center transition sm:min-w-0 ${
                         isActive
-                          ? "border-white/80 bg-white/15 text-white shadow-[0_10px_35px_rgba(42,99,255,0.35)]"
+                          ? "border-white/80 bg-white/15 text-white shadow-[0_10px_35px_rgba(255,255,255,0.15)]"
                           : "border-white/10 bg-white/5 text-white/70 hover:border-white/40 hover:text-white"
                       }`}
                     >

@@ -48,10 +48,12 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${spaceGrotesk.variable} ${inter.variable} ${eurostile.variable} bg-space-gradient`}
+      className={`${spaceGrotesk.variable} ${inter.variable} ${eurostile.variable}`}
+      style={{ background: "#000000" }}
     >
       <body
-        className="font-body antialiased bg-space-gradient text-white"
+        className="font-body antialiased text-white"
+        style={{ background: "#000000" }}
         data-site-mode={process.env.NEXT_PUBLIC_SITE_MODE ?? "staff"}
       >
         <AmbientScene />

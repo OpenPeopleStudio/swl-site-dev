@@ -71,14 +71,14 @@ export default async function ReflectionPage() {
   const reflections = await loadReflections();
 
   return (
-    <div className="mx-auto px-8 sm:px-12 md:px-16 lg:px-24 xl:px-32 py-20 sm:py-24 md:py-32 lg:py-40" style={{ maxWidth: "1400px" }}>
+    <div className="mx-auto px-4 sm:px-6 md:px-8 lg:px-12 py-8 sm:py-12 md:py-16" style={{ maxWidth: "1800px" }}>
       <PageHeader
         title="Reflection"
         subtitle="Daily System Feedback"
       />
 
       <GlassSection delay={0.3}>
-        <p className="text-lg sm:text-xl md:text-2xl text-white/60 leading-relaxed mb-10 sm:mb-12 md:mb-16">
+        <p className="text-base sm:text-lg md:text-xl text-white/60 leading-relaxed mb-6 sm:mb-8">
           Capture daily system feedback so tomorrow launches on time. Document moments, decisions, and improvements.
         </p>
 
