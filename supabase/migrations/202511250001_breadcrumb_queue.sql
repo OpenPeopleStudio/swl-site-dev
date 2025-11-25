@@ -127,3 +127,4 @@ grant execute on function search_breadcrumbs(vector(1536), float, int) to anon;
 comment on table swl_breadcrumb_queue is 'Queue for staff-submitted breadcrumb requests awaiting AI processing';
 comment on table swl_embeddings is 'Vector embeddings for breadcrumb semantic search and LLM discoverability';
 comment on function search_breadcrumbs is 'Search breadcrumbs by semantic similarity using vector embeddings';
+

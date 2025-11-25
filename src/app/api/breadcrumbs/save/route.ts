@@ -117,3 +117,4 @@ async function updateManifest(
     // Don't fail the whole operation if manifest update fails
   }
 }
+
