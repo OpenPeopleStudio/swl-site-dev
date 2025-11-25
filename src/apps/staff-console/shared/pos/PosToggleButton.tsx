@@ -14,6 +14,20 @@ export function PosToggleButton() {
   const onPosRoute = pathname?.startsWith("/pos");
   const onGateRoute = pathname?.startsWith("/gate");
   const onCustomerSurface = pathname?.startsWith("/customer");
+  const onLandingPage = pathname === "/";
+  const onReservePage = pathname?.startsWith("/reserve");
+  const onPreludePage = pathname?.startsWith("/prelude");
+  const onContactPage = pathname?.startsWith("/contact");
+  
+  // Hide POS button on all customer-facing routes
+  const isCustomerRoute = 
+    siteMode === "customer" || 
+    onGateRoute || 
+    onCustomerSurface || 
+    onLandingPage || 
+    onReservePage || 
+    onPreludePage || 
+    onContactPage;
 
   useEffect(() => {
     if (!pathname || pathname.startsWith("/pos")) return;
@@ -30,7 +44,7 @@ export function PosToggleButton() {
     [onPosRoute],
   );
 
-  if (siteMode === "customer" || onGateRoute || onCustomerSurface) {
+  if (isCustomerRoute) {
     return null;
   }
 

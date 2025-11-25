@@ -1,6 +1,7 @@
 "use client";
 
 import type { ComponentProps } from "react";
+import { SiteShell } from "@/components/design/SiteShell";
 import { PageHeader } from "@/components/design/PageHeader";
 import { GlassSection } from "@/components/design/GlassSection";
 import { MenuBuilderWorkspace } from "@/apps/staff-console/manager/MenuBuilderWorkspace";
@@ -163,31 +164,33 @@ const workspaceState: ComponentProps<typeof MenuBuilderWorkspace> = {
 
 export default function StaffMenuPage() {
   return (
-    <div className="mx-auto px-4 sm:px-6 md:px-8 lg:px-12 py-8 sm:py-12 md:py-16" style={{ maxWidth: "1800px" }}>
-      <PageHeader
-        title="Menu Builder"
-        subtitle="Live Development Queue"
-      />
+    <SiteShell>
+      <div className="mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-6 2xl:px-8 py-8 sm:py-12 md:py-16" style={{ maxWidth: "100%", width: "100%" }}>
+        <PageHeader
+          title="Menu Builder"
+          subtitle="Live Development Queue"
+        />
 
-      <GlassSection delay={0.3}>
-        <p className="text-base sm:text-lg md:text-xl text-white/60 leading-relaxed mb-6 sm:mb-8">
-          Calm snapshot of active dishes, prep load, and allergen flags. Plan, price, and deploy new menu experiences.
-        </p>
+        <GlassSection delay={0.3}>
+          <p className="text-base sm:text-lg md:text-xl text-white/60 leading-relaxed mb-6 sm:mb-8">
+            Calm snapshot of active dishes, prep load, and allergen flags. Plan, price, and deploy new menu experiences.
+          </p>
 
-        <div className="space-y-6 sm:space-y-8">
-          <div className="grid gap-4 md:grid-cols-3">
-            {workspaceState.costMetrics.map((metric) => (
-              <div key={metric.label} className="rounded-2xl border border-white/15 bg-white/5 p-4 sm:p-5">
-                <p className="text-xs uppercase tracking-[0.4em] text-white/50">{metric.label}</p>
-                <p className="mt-3 text-3xl sm:text-4xl font-light">{metric.value}</p>
-                <p className="mt-1 text-xs text-white/60">Trend · {metric.trend}</p>
-              </div>
-            ))}
+          <div className="space-y-6 sm:space-y-8">
+            <div className="grid gap-4 md:grid-cols-3">
+              {workspaceState.costMetrics.map((metric) => (
+                <div key={metric.label} className="rounded-2xl border border-white/10 bg-white/[0.02] p-4 sm:p-5 backdrop-blur-sm">
+                  <p className="text-xs uppercase tracking-[0.4em] text-white/50">{metric.label}</p>
+                  <p className="mt-3 text-3xl sm:text-4xl font-light text-white">{metric.value}</p>
+                  <p className="mt-1 text-xs text-white/60 leading-relaxed">Trend · {metric.trend}</p>
+                </div>
+              ))}
+            </div>
+
+            <MenuBuilderWorkspace {...workspaceState} />
           </div>
-
-      <MenuBuilderWorkspace {...workspaceState} />
-        </div>
-      </GlassSection>
-    </div>
+        </GlassSection>
+      </div>
+    </SiteShell>
   );
 }

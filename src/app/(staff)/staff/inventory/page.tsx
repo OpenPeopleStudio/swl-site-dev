@@ -1,5 +1,6 @@
 "use client";
 
+import { SiteShell } from "@/components/design/SiteShell";
 import { PageHeader } from "@/components/design/PageHeader";
 import { GlassSection } from "@/components/design/GlassSection";
 import { InventoryTopBar } from "@/apps/staff-console/boh/inventory/InventoryTopBar";
@@ -138,26 +139,27 @@ const summaryTiles = [
 
 export default function InventoryPage() {
   return (
-    <div className="mx-auto px-4 sm:px-6 md:px-8 lg:px-12 py-8 sm:py-12 md:py-16" style={{ maxWidth: "1800px" }}>
-      <PageHeader
-        title="Inventory"
-        subtitle="InventoryOS"
-      />
+    <SiteShell>
+      <div className="mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-6 2xl:px-8 py-8 sm:py-12 md:py-16" style={{ maxWidth: "100%", width: "100%" }}>
+        <PageHeader
+          title="Inventory"
+          subtitle="InventoryOS"
+        />
 
-      <GlassSection delay={0.3}>
-        <p className="text-base sm:text-lg md:text-xl text-white/60 leading-relaxed mb-6 sm:mb-8">
-          Monitor stock levels, predict shortages, and trigger rush orders. Track vendor performance and automation status.
-        </p>
+        <GlassSection delay={0.3}>
+          <p className="text-base sm:text-lg md:text-xl text-white/60 leading-relaxed mb-6 sm:mb-8">
+            Monitor stock levels, predict shortages, and trigger rush orders. Track vendor performance and automation status.
+          </p>
 
         <div className="space-y-6 sm:space-y-8">
           <InventoryTopBar title="InventoryOS" timestamp="Synced 14:32" alerts={alertChips} />
           
           <div className="grid gap-4 md:grid-cols-3">
             {summaryTiles.map((tile) => (
-              <div key={tile.id} className="rounded-2xl border border-white/10 bg-black/25 p-4 sm:p-5">
+              <div key={tile.id} className="rounded-2xl border border-white/10 bg-white/[0.02] p-4 sm:p-5 backdrop-blur-sm">
                 <p className="text-xs uppercase tracking-[0.4em] text-white/50">{tile.label}</p>
-                <p className="mt-3 text-3xl sm:text-4xl font-light">{tile.value}</p>
-                <p className="mt-1 text-xs text-white/60">{tile.detail}</p>
+                <p className="mt-3 text-3xl sm:text-4xl font-light text-white">{tile.value}</p>
+                <p className="mt-1 text-xs text-white/60 leading-relaxed">{tile.detail}</p>
               </div>
             ))}
           </div>
@@ -174,17 +176,17 @@ export default function InventoryPage() {
             {storageMetrics.map((metric) => (
               <section
                 key={metric.id}
-                className="rounded-3xl border border-white/10 bg-white/5 p-4 sm:p-5 shadow-[0_20px_60px_rgba(0,0,0,0.45)]"
+                className="rounded-3xl border border-white/10 bg-white/[0.02] p-4 sm:p-5 backdrop-blur-sm"
               >
                 <p className="text-xs uppercase tracking-[0.4em] text-white/40">{metric.title}</p>
-                <p className="mt-3 text-4xl sm:text-5xl font-light">{metric.level}%</p>
-                <p className="mt-1 text-xs text-white/60">{metric.eta}</p>
-                <p className="mt-3 text-sm text-white/70">{metric.note}</p>
+                <p className="mt-3 text-4xl sm:text-5xl font-light text-white">{metric.level}%</p>
+                <p className="mt-1 text-xs text-white/60 leading-relaxed">{metric.eta}</p>
+                <p className="mt-3 text-sm text-white/70 leading-relaxed">{metric.note}</p>
               </section>
             ))}
           </div>
-          <section className="rounded-3xl border border-dashed border-white/20 bg-white/0 p-4 sm:p-5 text-sm text-white/60">
-            <p>
+          <section className="rounded-3xl border border-dashed border-white/20 bg-white/[0.02] p-4 sm:p-5 backdrop-blur-sm">
+            <p className="text-sm text-white/60 leading-relaxed">
               Need the granular dashboard? Jump into{" "}
               <span className="text-white">Food InventoryOS</span> for live Supabase data, auto-replenish rituals, and vendor telemetry.
             </p>
@@ -192,9 +194,9 @@ export default function InventoryPage() {
         </div>
         <div className="w-full space-y-4 sm:space-y-6 xl:max-w-sm">
           <VendorInsightPanel vendors={vendors} />
-          <section className="rounded-3xl border border-white/10 bg-gradient-to-br from-[#14182c] to-[#05070f] p-4 sm:p-5 text-sm text-white/70 shadow-[0_20px_60px_rgba(0,0,0,0.45)]">
+          <section className="rounded-3xl border border-white/10 bg-white/[0.02] p-4 sm:p-5 backdrop-blur-sm">
             <p className="text-xs uppercase tracking-[0.4em] text-white/40">Next Checks</p>
-            <ul className="mt-3 space-y-2">
+            <ul className="mt-3 space-y-2 text-sm text-white/70 leading-relaxed">
               <li>· Confirm langoustine reserve pull (14:00)</li>
               <li>· Update allergen badges after Prelude push</li>
               <li>· Archive Nord drift log for owner review</li>
@@ -204,6 +206,7 @@ export default function InventoryPage() {
       </div>
         </div>
       </GlassSection>
-    </div>
+      </div>
+    </SiteShell>
   );
 }

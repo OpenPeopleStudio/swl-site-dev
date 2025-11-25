@@ -81,7 +81,7 @@ export default function BreadcrumbGenerator() {
 
   return (
     <SiteShell>
-      <div className="mx-auto px-4 sm:px-6 md:px-8 lg:px-12 py-8 sm:py-12 md:py-16" style={{ maxWidth: "1800px" }}>
+      <div className="mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-6 2xl:px-8 py-8 sm:py-12 md:py-16" style={{ maxWidth: "100%", width: "100%" }}>
         <PageHeader
           title="Breadcrumb Creator"
           subtitle="Overshare Engine"

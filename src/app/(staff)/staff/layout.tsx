@@ -52,15 +52,15 @@ export default function StaffLayout({ children }: { children: ReactNode }) {
       >
       <StarField />
 
-      <div className="staff-shell__inner relative z-10 flex min-h-screen flex-col items-center gap-12 sm:gap-16 md:gap-20 px-6 sm:px-12 md:px-16 lg:px-24 xl:px-32 py-12 sm:py-16 md:py-20 lg:py-24">
-        <header className="glass-surface panel-outline w-full max-w-7xl rounded-[32px] border border-white/10 bg-white/5 px-8 sm:px-10 md:px-12 lg:px-16 py-8 sm:py-10 md:py-12 backdrop-blur-xl">
+      <div className="staff-shell__inner relative z-10 flex min-h-screen flex-col items-center gap-12 sm:gap-16 md:gap-20 px-4 sm:px-6 md:px-8 lg:px-10 xl:px-6 2xl:px-8 py-12 sm:py-16 md:py-20 lg:py-24">
+        <header className="glass-surface panel-outline w-full rounded-[32px] border border-white/10 bg-white/5 px-6 sm:px-8 md:px-10 lg:px-12 xl:px-10 2xl:px-12 py-8 sm:py-10 md:py-12 backdrop-blur-xl">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <p className="text-xs uppercase tracking-[0.4em] text-white/50">
                 Snow White Laundry
               </p>
               <h1 className="text-3xl font-light text-white">
-                Cortex Orbital Console
+                Orb
               </h1>
             </div>
             <span className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-[0.3em] text-white/70">
@@ -115,7 +115,7 @@ export default function StaffLayout({ children }: { children: ReactNode }) {
           </nav>
         </header>
 
-        <section className="flex w-full max-w-7xl flex-1 items-start justify-center pb-16 sm:pb-20 md:pb-24 lg:pb-32">
+        <section className="flex w-full flex-1 items-start justify-center pb-16 sm:pb-20 md:pb-24 lg:pb-32">
           {children}
         </section>
       </div>

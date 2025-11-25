@@ -1,3 +1,4 @@
+import { SiteShell } from "@/components/design/SiteShell";
 import { PageHeader } from "@/components/design/PageHeader";
 import { GlassSection } from "@/components/design/GlassSection";
 import type { BoardReflection, ReflectionPrompt } from "@/apps/staff-console/boh/StaffReflectionBoard";
@@ -71,19 +72,21 @@ export default async function ReflectionPage() {
   const reflections = await loadReflections();
 
   return (
-    <div className="mx-auto px-4 sm:px-6 md:px-8 lg:px-12 py-8 sm:py-12 md:py-16" style={{ maxWidth: "1800px" }}>
-      <PageHeader
-        title="Reflection"
-        subtitle="Daily System Feedback"
-      />
+    <SiteShell>
+      <div className="mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-6 2xl:px-8 py-8 sm:py-12 md:py-16" style={{ maxWidth: "100%", width: "100%" }}>
+        <PageHeader
+          title="Reflection"
+          subtitle="Daily System Feedback"
+        />
 
-      <GlassSection delay={0.3}>
-        <p className="text-base sm:text-lg md:text-xl text-white/60 leading-relaxed mb-6 sm:mb-8">
-          Capture daily system feedback so tomorrow launches on time. Document moments, decisions, and improvements.
-        </p>
+        <GlassSection delay={0.3}>
+          <p className="text-base sm:text-lg md:text-xl text-white/60 leading-relaxed mb-6 sm:mb-8">
+            Capture daily system feedback so tomorrow launches on time. Document moments, decisions, and improvements.
+          </p>
 
-        <ReflectionPageClient reflections={reflections} prompts={prompts} />
-      </GlassSection>
-    </div>
+          <ReflectionPageClient reflections={reflections} prompts={prompts} />
+        </GlassSection>
+      </div>
+    </SiteShell>
   );
 }
