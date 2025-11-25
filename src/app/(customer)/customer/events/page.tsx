@@ -111,7 +111,7 @@ export default async function CustomerEventsPage() {
       </header>
 
       <div className="space-y-12">
-        <section className="rounded-3xl border border-white/10 bg-white/[0.02] p-8 sm:p-12 backdrop-blur-sm">
+        <section id="plan-new" className="rounded-3xl border border-white/10 bg-white/[0.02] p-8 sm:p-12 backdrop-blur-sm">
           <h2 className="text-2xl font-light mb-4 text-white/90">Plan a New Experience</h2>
           <p className="mb-6 text-white/60 leading-relaxed">
           Walk through the details and we’ll craft a proposal tailored to your night.
