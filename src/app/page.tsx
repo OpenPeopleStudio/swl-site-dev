@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { motion } from "framer-motion";
 import { StarField } from "@/components/design/StarField";
@@ -25,6 +26,19 @@ const anchorPoints = [
   "Service that is disciplined, warm, and unscripted.",
 ];
 
+type FuturePath = {
+  label: string;
+  note: string;
+  href?: string;
+};
+
+type TeamMember = {
+  name: string;
+  role: string;
+  focus: string;
+  detail: string;
+};
+
 const craftTenets = [
   {
     title: "Intention",
@@ -43,23 +57,34 @@ const craftTenets = [
   },
 ];
 
-const team = [
+const team: TeamMember[] = [
   {
     name: "Ken Pittman",
     role: "Head Chef",
-    detail: "Leads the kitchen with clarity and restraint, letting the best of Newfoundland and Labrador stay at the center.",
+    focus: "Kitchen architecture & tasting loops",
+    detail:
+      "Keeps sourcing, mise, and plating measured so Newfoundland ingredients stay central and calm on the plate.",
   },
   {
     name: "Tom Lane",
     role: "General Manager",
-    detail: "Shapes the flow of the room so structure fades into the background and the night moves with intention.",
+    focus: "Room choreography & guest cadence",
+    detail:
+      "Guides seating, service, and tone so every table feels the same structure, warmth, and intentional pacing.",
   },
 ];
 
-const futurePaths = [
-  { label: "Reservations", note: "Opens closer to service so we can honor every seat." },
+const futurePaths: FuturePath[] = [
+  {
+    label: "Reservations",
+    note: "Early interest list is open — share your party details and we will reply privately.",
+    href: "/reserve",
+  },
   { label: "Menus", note: "Seasonal menus publish once testing holds steady." },
-  { label: "Signals", note: "A quiet channel for guest reflections after opening." },
+  {
+    label: "Echo Ledger",
+    note: "Quiet guest impressions captured once the room opens; no marketing gloss.",
+  },
 ];
 
 const socialLinks = [
@@ -136,6 +161,15 @@ export default function Landing() {
               <p className="text-base sm:text-lg md:text-xl text-white/80 max-w-3xl leading-relaxed">
                 Through intention, and craft, we inspire emotion in everything we do.
               </p>
+              <div className="pt-2">
+                <Link
+                  href="/gate"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/30 px-5 py-2 text-[0.6rem] uppercase tracking-[0.35em] text-white/80 transition hover:border-white/70 hover:text-white"
+                >
+                  Staff Login
+                  <span aria-hidden="true">↗</span>
+                </Link>
+              </div>
             </div>
           </motion.header>
 
@@ -188,16 +222,42 @@ export default function Landing() {
           >
             <p className="text-xs uppercase tracking-[0.35em] text-white/40">Future paths</p>
             <div className="flex flex-wrap gap-6 text-sm text-white/60">
-              {futurePaths.map((path) => (
-                <div key={path.label} className="space-y-2">
-                  <span className="rounded-full border border-white/15 px-4 py-2 tracking-[0.2em] uppercase text-[0.65rem]">
-                    {path.label}
-                  </span>
-                  <p className="max-w-[14rem] text-xs text-white/40">{path.note}</p>
-                </div>
-              ))}
+              {futurePaths.map((path) => {
+                const capsule = (
+                  <>
+                    <span className="inline-flex rounded-full border border-white/15 px-4 py-2 text-[0.65rem] uppercase tracking-[0.2em] transition group-hover:border-white/60">
+                      {path.label}
+                    </span>
+                    <p className="max-w-[16rem] text-xs text-white/40 transition group-hover:text-white/70">
+                      {path.note}
+                    </p>
+                  </>
+                );
+
+                if (path.href) {
+                  return (
+                    <Link
+                      key={path.label}
+                      href={path.href}
+                      className="group space-y-2 transition hover:text-white"
+                      aria-label={`${path.label} — ${path.note}`}
+                    >
+                      {capsule}
+                      <span className="inline-flex items-center gap-2 text-[0.55rem] uppercase tracking-[0.25em] text-white/40 transition group-hover:text-white/70">
+                        Enter waitlist
+                        <span aria-hidden="true">↗</span>
+                      </span>
+                    </Link>
+                  );
+                }
+
+                return (
+                  <div key={path.label} className="group space-y-2">
+                    {capsule}
+                  </div>
+                );
+              })}
             </div>
-            <p className="text-xs text-white/40">Journal is live below; the remaining paths unlock when those systems are real.</p>
           </motion.section>
 
           <motion.section
@@ -232,14 +292,24 @@ export default function Landing() {
             aria-label="Team"
           >
             <p className="text-xs uppercase tracking-[0.35em] text-white/40">Team</p>
-            <div className="flex flex-col gap-6 sm:flex-row sm:gap-10">
+            <div className="grid gap-6 sm:grid-cols-2">
               {team.map((person) => (
-                <article key={person.name} className="space-y-2 text-sm text-white/80 sm:max-w-[18rem]">
-                  <p className="text-white text-sm uppercase tracking-[0.25em]">
-                    {person.name}
-                    <span className="text-white/40"> — {person.role}</span>
+                <article
+                  key={person.name}
+                  className="space-y-4 rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur"
+                >
+                  <div>
+                    <p className="text-sm uppercase tracking-[0.25em] text-white">
+                      {person.name}
+                    </p>
+                    <p className="text-xs uppercase tracking-[0.35em] text-white/50">
+                      {person.role}
+                    </p>
+                  </div>
+                  <p className="text-[0.65rem] uppercase tracking-[0.35em] text-white/40">
+                    {person.focus}
                   </p>
-                  <p className="text-white/70">{person.detail}</p>
+                  <p className="text-sm leading-relaxed text-white/70">{person.detail}</p>
                 </article>
               ))}
             </div>

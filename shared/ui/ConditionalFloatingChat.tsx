@@ -5,6 +5,15 @@ import FloatingChat from "@/shared/ui/FloatingChat";
 import { CustomerConciergeChat } from "@/domains/customer/components/CustomerConciergeChat";
 
 const HIDDEN_PREFIX = "/gate";
+const STAFF_PREFIXES = [
+  "/staff",
+  "/owner",
+  "/owners",
+  "/owner-console",
+  "/console",
+  "/pos",
+];
+const SITE_MODE = (process.env.NEXT_PUBLIC_SITE_MODE ?? "staff").toLowerCase();
 
 export function ConditionalFloatingChat() {
   const pathname = usePathname() ?? "";
@@ -13,7 +22,14 @@ export function ConditionalFloatingChat() {
     return null;
   }
 
-  if (pathname.startsWith("/customer")) {
+  const isStaffSurface = STAFF_PREFIXES.some((prefix) =>
+    pathname.startsWith(prefix),
+  );
+
+  const preferCustomerChat =
+    SITE_MODE === "customer" || !isStaffSurface;
+
+  if (preferCustomerChat) {
     return <CustomerConciergeChat />;
   }
 
