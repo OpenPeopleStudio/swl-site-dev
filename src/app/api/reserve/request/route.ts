@@ -84,11 +84,18 @@ export async function POST(request: Request) {
     });
 
     if (fallbackResult.error) {
-      console.error("Failed to store reservation request", insertResult.error, fallbackResult.error);
-      return NextResponse.json(
-        { error: "Unable to record your request right now." },
-        { status: 500 },
-      );
+      if (fallbackResult.error.code !== "23505") {
+        console.error(
+          "Failed to store reservation request",
+          insertResult.error,
+          fallbackResult.error,
+        );
+        return NextResponse.json(
+          { error: "Unable to record your request right now." },
+          { status: 500 },
+        );
+      }
+      return NextResponse.json({ ok: true, fallback: true, duplicate: true });
     }
 
     return NextResponse.json({ ok: true, fallback: true });
