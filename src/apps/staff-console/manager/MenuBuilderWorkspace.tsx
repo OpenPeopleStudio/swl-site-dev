@@ -2,65 +2,16 @@
 
 import { useMemo } from "react";
 import { Sparkles, MessageCircle } from "lucide-react";
-
-type DishSummary = {
-  id: string;
-  name: string;
-  category: string;
-  status: "R&D" | "Testing" | "Trials" | "Live" | "Retired";
-  updated_at: string;
-};
-
-type ComponentDraft = {
-  id: string;
-  name: string;
-  technique: string;
-  estimatedTime?: string;
-};
-
-type IngredientRecord = {
-  id: string;
-  name: string;
-  vendor?: string | null;
-  unit?: string;
-  cost?: number | null;
-  aiEstimate?: number | null;
-  allergenTags?: string[];
-};
-
-type CostMetric = {
-  label: string;
-  value: string;
-  trend?: "up" | "down" | "flat";
-};
-
-type VersionEntry = {
-  id: string;
-  label: string;
-  date: string;
-  notes: string;
-  deltaCost?: string;
-};
-
-type PlatingAsset = {
-  id: string;
-  photoUrl: string;
-  annotations?: string;
-};
-
-type ChatMessage = {
-  id: string;
-  author: string;
-  content: string;
-  timestamp: string;
-  outgoing?: boolean;
-};
-
-type PrepSummary = {
-  covers: number;
-  batches: Array<{ label: string; qty: string; due: string }>;
-  alerts: string[];
-};
+import type {
+  CostMetric,
+  ComponentDraft,
+  DishSummary,
+  IngredientRecord,
+  PlatingAsset,
+  PrepSummary,
+  ChefMessage,
+  VersionEntry,
+} from "@/types/menu-builder";
 
 type MenuBuilderWorkspaceProps = {
   dishes: DishSummary[];
@@ -71,7 +22,7 @@ type MenuBuilderWorkspaceProps = {
   allergens: string[];
   versionHistory: VersionEntry[];
   platingAssets: PlatingAsset[];
-  chefChat: ChatMessage[];
+  chefChat: ChefMessage[];
   prepSummary: PrepSummary;
 };
 
@@ -415,7 +366,7 @@ export function PlatingGuideViewer({ assets }: PlatingGuideViewerProps) {
 }
 
 type ChefChatSidebarProps = {
-  messages: ChatMessage[];
+  messages: ChefMessage[];
 };
 
 export function ChefChatSidebar({ messages }: ChefChatSidebarProps) {
@@ -453,9 +404,7 @@ type PrepEngineSummaryPaneProps = {
   summary: PrepSummary;
 };
 
-export function PrepEngineSummaryPane({
-  summary,
-}: PrepEngineSummaryPaneProps) {
+export function PrepEngineSummaryPane({ summary }: PrepEngineSummaryPaneProps) {
   return (
     <section className="rounded-[20px] border border-white/10 bg-white/5 p-4 text-sm text-white/70 shadow-[0_18px_50px_rgba(0,0,0,0.35)] backdrop-blur">
       <div className="mb-3 flex items-center justify-between">

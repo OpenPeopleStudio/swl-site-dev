@@ -77,7 +77,7 @@ export default function OvershareIndex() {
               Overshare · Knowledge Archive
             </p>
           </div>
-          <p className="mb-4 sm:mb-6 text-xs sm:text-sm uppercase tracking-[0.5em] text-cyan-400/60">
+          <p className="mb-4 sm:mb-6 text-xs sm:text-sm uppercase tracking-[0.5em] text-white/55">
             Knowledge Archive
           </p>
           <h1 className="font-['Eurostile',_sans-serif] text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-light tracking-wide text-white">
@@ -102,9 +102,14 @@ export default function OvershareIndex() {
           <div className="rounded-[32px] border border-white/10 bg-white/[0.02] p-12 text-center backdrop-blur-md shadow-[0_35px_120px_rgba(0,0,0,0.55)]">
             <p className="text-white/50">No breadcrumbs yet.</p>
             <p className="mt-2 text-sm text-white/30">
-              Staff can generate breadcrumbs at{" "}
-              <Link href="/staff/breadcrumbs" className="text-cyan-300/60 hover:text-cyan-300">
-                /staff/breadcrumbs
+              Overshare authoring now lives at{" "}
+              <Link
+                href="https://overshare.snowwhitelaundry.co"
+                className="text-[#facc15]/70 hover:text-[#facc15]"
+                target="_blank"
+                rel="noreferrer"
+              >
+                overshare.snowwhitelaundry.co
               </Link>
             </p>
           </div>
@@ -121,15 +126,15 @@ export default function OvershareIndex() {
                 <div className="grid gap-4 sm:gap-6 md:gap-8 sm:grid-cols-2">
                   {grouped[category].map((bc) => (
                     <Link key={bc.slug} href={`/overshare/${bc.slug}`}>
-                      <article className="group relative overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.03] p-6 sm:p-7 md:p-8 shadow-[0_25px_80px_rgba(0,0,0,0.5)] backdrop-blur-lg transition-all duration-300 hover:border-cyan-400/40 hover:bg-white/[0.06]">
-                        <div className="absolute inset-0 bg-gradient-to-br from-cyan-400/10 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                      <article className="group relative overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.03] p-6 sm:p-7 md:p-8 shadow-[0_25px_80px_rgba(0,0,0,0.5)] backdrop-blur-lg transition-all duration-300 hover:border-white/25 hover:bg-white/[0.05]">
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#facc15]/15 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                         <h3 className="relative text-lg font-light capitalize text-white/90 transition group-hover:text-white">
                           {bc.title}
                         </h3>
                         <p className="relative mt-2 text-xs text-white/30">
                           {bc.file}
                         </p>
-                        <div className="absolute right-5 top-1/2 -translate-y-1/2 text-white/25 transition-all duration-300 group-hover:translate-x-1.5 group-hover:text-cyan-300/60">
+                        <div className="absolute right-5 top-1/2 -translate-y-1/2 text-white/25 transition-all duration-300 group-hover:translate-x-1.5 group-hover:text-[#facc15]/70">
                           →
                         </div>
                       </article>
@@ -146,10 +151,12 @@ export default function OvershareIndex() {
           <div className="flex flex-wrap items-center justify-between gap-6 sm:gap-8 text-xs sm:text-sm text-white/30">
             <p>Snow White Laundry · Overshare Engine</p>
             <Link
-              href="/staff/breadcrumbs"
-              className="text-cyan-400/50 transition-colors hover:text-cyan-400"
+              href="https://overshare.snowwhitelaundry.co"
+              target="_blank"
+              rel="noreferrer"
+              className="text-[#facc15]/70 transition-colors hover:text-[#facc15]"
             >
-              Staff Portal →
+              Overshare Handbook →
             </Link>
           </div>
         </footer>

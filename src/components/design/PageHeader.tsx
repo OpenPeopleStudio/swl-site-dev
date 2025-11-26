@@ -7,9 +7,10 @@ interface PageHeaderProps {
   title: string;
   subtitle?: string;
   className?: string;
+  children?: React.ReactNode;
 }
 
-export function PageHeader({ title, subtitle, className = "" }: PageHeaderProps) {
+export function PageHeader({ title, subtitle, className = "", children }: PageHeaderProps) {
   return (
     <motion.header
       className={`mb-6 sm:mb-8 md:mb-10 ${className}`}
@@ -33,6 +34,9 @@ export function PageHeader({ title, subtitle, className = "" }: PageHeaderProps)
       >
         {title}
       </motion.h1>
+      {children && (
+        <div className="mt-4">{children}</div>
+      )}
     </motion.header>
   );
 }

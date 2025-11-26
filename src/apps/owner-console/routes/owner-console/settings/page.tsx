@@ -11,7 +11,7 @@ export default async function OwnerSettingsPage() {
 
   return (
     <SiteShell className="text-white">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-10 sm:px-6 lg:px-8">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8 sm:px-5 lg:px-6">
         <header className="space-y-3">
           <p className="text-[0.65rem] uppercase tracking-[0.45em] text-white/40">Owner Console · Settings</p>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">

@@ -3,6 +3,7 @@
 import { ensureOwner } from "@/apps/owner-console/lib/ensureOwner";
 import { getSupabaseAdmin } from "@/lib/shared/supabase";
 import { OwnerConsoleAdvancedModules } from "@/apps/owner-console/components/owner/OwnerConsoleAdvancedModules";
+import { StarField } from "@/components/design/StarField";
 
 function formatDate(value?: string | null) {
   if (!value) return "Pending";
@@ -165,16 +166,19 @@ export default async function OwnerConsoleAdvancedPage() {
   );
 
   return (
-    <main className="min-h-screen bg-[#010206] px-4 py-10 text-white sm:px-8">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
-        <header className="space-y-2">
-          <p className="text-xs uppercase tracking-[0.5em] text-white/40">Owner Console</p>
-          <h1 className="text-4xl font-light tracking-[0.25em]">
-            Advanced Layer · Tom & Ken
-          </h1>
-          <p className="text-white/60">
-            Calm, high-signal intelligence for motivation, guests, horizon, and reflection.
-          </p>
+    <main className="relative min-h-screen overflow-hidden bg-black text-white" data-shell="owner">
+      <StarField className="-z-10 opacity-70 pointer-events-none" />
+      <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-10 sm:px-5 lg:px-8">
+        <header className="rounded-[28px] border border-white/10 bg-white/[0.02] p-6 shadow-[0_30px_120px_rgba(0,0,0,0.65)] backdrop-blur-xl">
+          <p className="text-[0.65rem] uppercase tracking-[0.45em] text-white/50">Owner Console</p>
+          <div className="mt-3 space-y-2">
+            <h1 className="text-3xl font-light tracking-[0.25em]">
+              Advanced Layer · Tom & Ken
+            </h1>
+            <p className="text-sm text-white/60">
+              Calm, high-signal intelligence for motivation, guests, horizon, and reflection.
+            </p>
+          </div>
         </header>
         <OwnerConsoleAdvancedModules
           staffMotivation={{

@@ -205,10 +205,12 @@ export default async function BreadcrumbPage({ params }: PageProps) {
                 All Breadcrumbs
               </Link>
               <Link
-                href="/staff/breadcrumbs"
+                href="https://overshare.snowwhitelaundry.co"
+                target="_blank"
+                rel="noreferrer"
                 className="text-cyan-400/50 transition-colors hover:text-cyan-400"
               >
-                Staff Portal →
+                Overshare Handbook →
               </Link>
             </div>
           </div>
