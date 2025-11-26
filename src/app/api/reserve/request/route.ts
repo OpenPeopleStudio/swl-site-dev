@@ -61,46 +61,45 @@ export async function POST(request: Request) {
 
   const supabase = getSupabaseAdmin();
 
-  const insertResult = await supabase.from("reservation_requests").insert({
-    name,
+  const baseInsert = await supabase.from("mailing_list_signups").insert({
     email,
-    party_size: partySizeValue,
-    visit_window: visitWindow,
-    notes,
-    source,
+    source: `${source}_interest`,
+    metadata: {
+      name,
+      party_size: partySizeValue,
+      visit_window: visitWindow,
+      notes,
+      intent: "reservation_request",
+    },
   });
 
-  if (insertResult.error) {
-    const fallbackResult = await supabase.from("mailing_list_signups").insert({
-      email,
-      source: `${source}_fallback`,
-      metadata: {
-        name,
-        party_size: partySizeValue,
-        visit_window: visitWindow,
-        notes,
-        intent: "reservation_request",
-      },
-    });
-
-    if (fallbackResult.error) {
-      if (fallbackResult.error.code !== "23505") {
-        console.error(
-          "Failed to store reservation request",
-          insertResult.error,
-          fallbackResult.error,
-        );
-        return NextResponse.json(
-          { error: "Unable to record your request right now." },
-          { status: 500 },
-        );
-      }
-      return NextResponse.json({ ok: true, fallback: true, duplicate: true });
-    }
-
-    return NextResponse.json({ ok: true, fallback: true });
+  if (baseInsert.error && baseInsert.error.code !== "23505") {
+    console.error("Mailing list capture failed", baseInsert.error);
+    return NextResponse.json(
+      { error: "Unable to record your request right now." },
+      { status: 500 },
+    );
   }
 
-  return NextResponse.json({ ok: true });
+  void supabase
+    .from("reservation_requests")
+    .insert({
+      name,
+      email,
+      party_size: partySizeValue,
+      visit_window: visitWindow,
+      notes,
+      source,
+    })
+    .then(({ error }) => {
+      if (error) {
+        console.error("Reservation request table insert failed", error);
+      }
+    })
+    .catch((error) => {
+      console.error("Reservation request background insert error", error);
+    });
+
+  return NextResponse.json({ ok: true, fallback: Boolean(baseInsert.error) });
 }
 
