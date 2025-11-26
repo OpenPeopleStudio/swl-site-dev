@@ -1,6 +1,26 @@
 @import "tailwindcss";
 @import "../design/tokens.css";
 
+/* Global glass baseline */
+*,
+*::before,
+*::after,
+::backdrop {
+  box-sizing: border-box;
+  border-color: rgba(255, 255, 255, 0.08);
+  outline-color: rgba(255, 255, 255, 0.3);
+  text-rendering: optimizeLegibility;
+  background-clip: padding-box;
+}
+
+::backdrop {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.08), transparent 55%),
+    radial-gradient(circle at 80% 60%, rgba(80, 110, 255, 0.08), transparent 65%),
+    #01020a;
+  backdrop-filter: blur(48px) saturate(115%);
+}
+
 :root {
   color-scheme: dark;
   --background: #000000;

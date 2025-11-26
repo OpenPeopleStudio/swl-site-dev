@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     }
 
     const supabase = getSupabaseAdmin();
-    let threadId = body.threadId?.trim();
+    let threadId = body.threadId?.trim() ?? null;
 
     if (!threadId) {
       const { data, error } = await supabase
@@ -56,6 +56,14 @@ export async function POST(request: Request) {
         );
       }
       threadId = data.id;
+    }
+
+    if (!threadId) {
+      console.error("Laundry Line thread missing after creation");
+      return NextResponse.json(
+        { error: "Laundry Line is unavailable right now." },
+        { status: 500 },
+      );
     }
 
     const guestInsert = await supabase.from("laundry_line_messages").insert({
