@@ -791,6 +791,154 @@ with check (true);
 
 
 -- ============================================================================
+-- Laundry Line (guest chat + lead capture)
+-- ============================================================================
+
+do $$
+begin
+  if not exists (select 1 from pg_type where typname = 'laundry_line_sender') then
+    create type laundry_line_sender as enum ('guest', 'assistant', 'staff');
+  end if;
+
+  if not exists (select 1 from pg_type where typname = 'laundry_line_intent') then
+    create type laundry_line_intent as enum (
+      'visit_prelude',
+      'visit_main',
+      'private_event',
+      'philosophy_only',
+      'other'
+    );
+  end if;
+end$$;
+
+create table if not exists public.laundry_line_threads (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete set null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  source text default 'web',
+  status text default 'open',
+  topic text,
+  needs_staff_followup boolean default false
+);
+
+create index if not exists laundry_line_threads_user_id_idx
+  on public.laundry_line_threads(user_id);
+
+create table if not exists public.laundry_line_messages (
+  id uuid primary key default gen_random_uuid(),
+  thread_id uuid not null references public.laundry_line_threads(id) on delete cascade,
+  sender laundry_line_sender not null,
+  content text not null,
+  created_at timestamptz not null default now(),
+  meta jsonb default '{}'::jsonb
+);
+
+create index if not exists laundry_line_messages_thread_id_idx
+  on public.laundry_line_messages(thread_id, created_at);
+
+create table if not exists public.laundry_line_leads (
+  id uuid primary key default gen_random_uuid(),
+  thread_id uuid references public.laundry_line_threads(id) on delete set null,
+  created_at timestamptz not null default now(),
+  intent laundry_line_intent not null,
+  name text,
+  email text,
+  party_size int,
+  date_window_start date,
+  date_window_end date,
+  is_flexible boolean default true,
+  notes text,
+  consent_to_email boolean default false,
+  internal_status text default 'new'
+);
+
+create index if not exists laundry_line_leads_intent_idx
+  on public.laundry_line_leads(intent, created_at desc);
+
+create or replace function public.touch_laundry_line_threads_updated_at()
+returns trigger as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$ language plpgsql;
+
+drop trigger if exists trg_laundry_line_threads_updated on public.laundry_line_threads;
+create trigger trg_laundry_line_threads_updated
+before update on public.laundry_line_threads
+for each row
+execute procedure public.touch_laundry_line_threads_updated_at();
+
+alter table public.laundry_line_threads enable row level security;
+alter table public.laundry_line_messages enable row level security;
+alter table public.laundry_line_leads enable row level security;
+
+drop policy if exists "laundry_line_threads_insert_public" on public.laundry_line_threads;
+create policy "laundry_line_threads_insert_public"
+on public.laundry_line_threads
+for insert
+to public
+with check (true);
+
+drop policy if exists "laundry_line_messages_insert_public" on public.laundry_line_messages;
+create policy "laundry_line_messages_insert_public"
+on public.laundry_line_messages
+for insert
+to public
+with check (true);
+
+drop policy if exists "laundry_line_leads_insert_public" on public.laundry_line_leads;
+create policy "laundry_line_leads_insert_public"
+on public.laundry_line_leads
+for insert
+to public
+with check (true);
+
+drop policy if exists "laundry_line_threads_select_staff" on public.laundry_line_threads;
+create policy "laundry_line_threads_select_staff"
+on public.laundry_line_threads
+for select
+to authenticated
+using (
+  exists (
+    select 1
+    from auth.users u
+    where u.id = auth.uid()
+      and coalesce(u.raw_user_meta_data->>'role', '') in ('staff', 'owner', 'admin')
+  )
+);
+
+drop policy if exists "laundry_line_messages_select_staff" on public.laundry_line_messages;
+create policy "laundry_line_messages_select_staff"
+on public.laundry_line_messages
+for select
+to authenticated
+using (
+  exists (
+    select 1
+    from auth.users u
+    where u.id = auth.uid()
+      and coalesce(u.raw_user_meta_data->>'role', '') in ('staff', 'owner', 'admin')
+  )
+);
+
+drop policy if exists "laundry_line_leads_select_staff" on public.laundry_line_leads;
+create policy "laundry_line_leads_select_staff"
+on public.laundry_line_leads
+for select
+to authenticated
+using (
+  exists (
+    select 1
+    from auth.users u
+    where u.id = auth.uid()
+      and coalesce(u.raw_user_meta_data->>'role', '') in ('staff', 'owner', 'admin')
+  )
+);
+
+
+-- ============================================================================
 -- Staff Menu orchestration tables (shared between staff + owner consoles)
 -- ============================================================================
 

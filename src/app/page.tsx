@@ -5,6 +5,7 @@ import { FormEvent, useState } from "react";
 import { motion } from "framer-motion";
 import { StarField } from "@/components/design/StarField";
 import { GlassNav } from "@/components/design/GlassNav";
+import { LaundryLineChat } from "@/components/LaundryLineChat";
 import { RestaurantSchema } from "@/lib/jsonld-components";
 
 /**
@@ -276,6 +277,16 @@ export default function Landing() {
                 );
               })}
             </div>
+          </motion.section>
+
+          <motion.section
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-20%" }}
+            transition={{ duration: 0.8 }}
+            aria-label="Laundry Line chat"
+          >
+            <LaundryLineChat />
           </motion.section>
 
           <motion.section
