@@ -789,6 +789,51 @@ on public.gate_auth_log
 for insert
 with check (true);
 
+-- ---------------------------------------------------------------------------
+-- Reservation requests (public interest form)
+-- ---------------------------------------------------------------------------
+
+create table if not exists public.reservation_requests (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  name text not null,
+  email text not null,
+  party_size int not null check (party_size > 0),
+  visit_window text,
+  notes text,
+  source text not null default 'reserve',
+  status text not null default 'pending' check (status in ('pending', 'contacted', 'archived'))
+);
+
+create index if not exists reservation_requests_email_idx
+  on public.reservation_requests (lower(email));
+
+create index if not exists reservation_requests_created_idx
+  on public.reservation_requests (created_at desc);
+
+alter table public.reservation_requests enable row level security;
+
+drop policy if exists "reservation_requests_public_insert" on public.reservation_requests;
+create policy "reservation_requests_public_insert"
+on public.reservation_requests
+for insert
+to public
+with check (true);
+
+drop policy if exists "reservation_requests_staff_select" on public.reservation_requests;
+create policy "reservation_requests_staff_select"
+on public.reservation_requests
+for select
+to authenticated
+using (
+  exists (
+    select 1
+    from auth.users u
+    where u.id = auth.uid()
+    and coalesce(u.raw_user_meta_data->>'role', '') in ('staff', 'owner', 'admin')
+  )
+);
+
 
 -- ============================================================================
 -- Laundry Line (guest chat + lead capture)

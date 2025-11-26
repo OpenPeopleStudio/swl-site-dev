@@ -124,7 +124,15 @@ const journalEntries: JournalEntry[] = [
   },
 ];
 
+const gateUrl =
+  process.env.NEXT_PUBLIC_GATE_URL ?? "https://ai.snowwhitelaundry.co/gate";
+const gateLinkIsExternal = gateUrl.startsWith("http");
+
 export default function Landing() {
+  const gateLinkProps = gateLinkIsExternal
+    ? { target: "_blank", rel: "noreferrer" as const }
+    : {};
+
   return (
     <>
       <RestaurantSchema />
@@ -181,13 +189,14 @@ export default function Landing() {
                   Contact
                   <span aria-hidden="true">↗</span>
                 </Link>
-                <Link
-                  href="/gate"
+                <a
+                  href={gateUrl}
+                  {...gateLinkProps}
                   className="inline-flex items-center gap-2 rounded-full border border-white/30 px-5 py-2 text-[0.6rem] uppercase tracking-[0.35em] text-white/80 transition hover:border-white/70 hover:text-white"
                 >
                   Staff Login
                   <span aria-hidden="true">↗</span>
-                </Link>
+                </a>
               </div>
             </div>
           </motion.header>

@@ -11,13 +11,18 @@ const navItems = [
   { label: "Events", href: "/customer/events" },
 ];
 
-const gateUrl = process.env.NEXT_PUBLIC_GATE_URL ?? "/gate";
+const gateUrl =
+  process.env.NEXT_PUBLIC_GATE_URL ?? "https://ai.snowwhitelaundry.co/gate";
+const gateLinkIsExternal = gateUrl.startsWith("http");
 
 export default function CustomerLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [navOpen, setNavOpen] = useState(false);
   const activeLabel = navItems.find((item) => item.href === pathname)?.label ?? "Navigate";
   const drawerId = "customer-nav-drawer";
+  const gateLinkProps = gateLinkIsExternal
+    ? { target: "_blank", rel: "noreferrer" as const }
+    : {};
 
   return (
     <div className="relative min-h-screen overflow-hidden text-white" style={{ background: "#000000" }}>
@@ -36,8 +41,7 @@ export default function CustomerLayout({ children }: { children: ReactNode }) {
             </div>
             <a
               href={gateUrl}
-              target="_blank"
-              rel="noreferrer"
+              {...gateLinkProps}
               className="inline-flex items-center justify-center rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-[0.35em] text-white/80 transition hover:border-white/60 hover:text-white"
             >
               Staff Login

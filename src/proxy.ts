@@ -34,12 +34,22 @@ const CUSTOMER_HOSTS = (() => {
   return hosts;
 })();
 
+const PROTECTED_PATH_PREFIXES = [
+  "/staff",
+  "/owner-console",
+  "/owner",
+  "/owners",
+  "/console",
+  "/pos",
+];
+
 export const config = {
   matcher: ["/((?!_next|api|public).*)"],
 };
 
 export default function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
+  const search = request.nextUrl.search ?? "";
   const cookie = request.cookies.get(STAFF_COOKIE);
   const requestedHost = request.headers.get("host")?.toLowerCase() ?? "";
   const normalizedRequestHost = requestedHost.split(":")[0] ?? "";
@@ -50,10 +60,31 @@ export default function proxy(request: NextRequest) {
     normalizedRequestHost.length > 0 &&
     CUSTOMER_HOSTS.has(normalizedRequestHost);
 
-  if (isGateDomain && !pathname.startsWith("/gate")) {
+  const requiresProtectedAccess = PROTECTED_PATH_PREFIXES.some((prefix) =>
+    pathname.startsWith(prefix),
+  );
+
+  const buildGateRedirectUrl = () => {
     const url = request.nextUrl.clone();
     url.pathname = "/gate";
-    return NextResponse.rewrite(url);
+    const target = `${pathname}${search}`;
+    if (pathname !== "/gate" && target && target !== "/") {
+      url.searchParams.set("next", target);
+    }
+    return url;
+  };
+
+  if (isGateDomain) {
+    if (pathname.startsWith("/gate")) {
+      return NextResponse.next();
+    }
+
+    if (cookie) {
+      return NextResponse.next();
+    }
+
+    const redirectUrl = buildGateRedirectUrl();
+    return NextResponse.redirect(redirectUrl);
   }
 
   if (isCustomerDomain) {
@@ -62,18 +93,15 @@ export default function proxy(request: NextRequest) {
       url.pathname = "/";
       return NextResponse.rewrite(url);
     }
-    if (pathname.startsWith("/staff")) {
-      url.pathname = "/gate";
+    if (requiresProtectedAccess) {
+      url.pathname = "/";
       return NextResponse.rewrite(url);
     }
   }
 
-  if (!cookie && pathname.startsWith("/staff")) {
-    const url = request.nextUrl.clone();
-    const search = request.nextUrl.search ?? "";
-    url.pathname = "/gate";
-    url.searchParams.set("redirect", `${pathname}${search}`);
-    return NextResponse.redirect(url);
+  if (!cookie && requiresProtectedAccess) {
+    const redirectUrl = buildGateRedirectUrl();
+    return NextResponse.redirect(redirectUrl);
   }
 
   return NextResponse.next();
