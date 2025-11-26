@@ -58,8 +58,8 @@ export default function proxy(request: NextRequest) {
 
   if (isCustomerDomain) {
     const url = request.nextUrl.clone();
-    if (pathname === "/" || pathname === "/gate") {
-      url.pathname = "/customer";
+    if (pathname === "/gate") {
+      url.pathname = "/";
       return NextResponse.rewrite(url);
     }
     if (pathname.startsWith("/staff")) {

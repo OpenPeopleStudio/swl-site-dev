@@ -165,7 +165,21 @@ export default function Landing() {
               <p className="text-base sm:text-lg md:text-xl text-white/80 max-w-3xl leading-relaxed">
                 Through intention, and craft, we inspire emotion in everything we do.
               </p>
-              <div className="pt-2">
+              <div className="pt-4 flex flex-wrap gap-3">
+                <Link
+                  href="/reserve"
+                  className="inline-flex items-center gap-3 rounded-full border border-white/50 px-6 py-2 text-[0.65rem] uppercase tracking-[0.35em] text-white transition hover:border-white hover:bg-white/10"
+                >
+                  Reserve Interest
+                  <span aria-hidden="true">→</span>
+                </Link>
+                <Link
+                  href="/contact"
+                  className="inline-flex items-center gap-3 rounded-full border border-white/20 px-6 py-2 text-[0.65rem] uppercase tracking-[0.35em] text-white/70 transition hover:border-white/60 hover:text-white"
+                >
+                  Contact
+                  <span aria-hidden="true">↗</span>
+                </Link>
                 <Link
                   href="/gate"
                   className="inline-flex items-center gap-2 rounded-full border border-white/30 px-5 py-2 text-[0.6rem] uppercase tracking-[0.35em] text-white/80 transition hover:border-white/70 hover:text-white"
