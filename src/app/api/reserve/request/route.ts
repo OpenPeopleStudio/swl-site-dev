@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { getSupabaseAdmin } from "@/lib/shared/supabase";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -69,24 +70,25 @@ export async function POST(request: Request) {
     intent: "reservation_request",
   };
 
-  const [reservationResult, mailingListResult] = await Promise.all([
-    supabase.from("reservation_requests").insert({
-      name,
-      email,
-      party_size: partySizeValue,
-      visit_window: visitWindow,
-      notes,
-      source,
-    }),
-    supabase.from("mailing_list_signups").insert({
-      email,
-      source: `${source}_interest`,
-      metadata,
-    }),
-  ]);
+  const mailingListInsertPromise = supabase.from("mailing_list_signups").insert({
+    email,
+    source: `${source}_interest`,
+    metadata,
+  });
 
-  if (reservationResult.error) {
-    console.error("Reservation request table insert failed", reservationResult.error);
+  const reservationOutcome = await persistReservationRequest(supabase, {
+    name,
+    email,
+    partySize: partySizeValue,
+    visitWindow,
+    notes,
+    source,
+  });
+
+  const mailingListResult = await mailingListInsertPromise;
+
+  if (!reservationOutcome.ok) {
+    console.error("Reservation request persistence failed", reservationOutcome.error);
     return NextResponse.json(
       { error: "Unable to record your request right now." },
       { status: 500 },
@@ -105,6 +107,65 @@ export async function POST(request: Request) {
     ok: true,
     mailingListCaptured,
     duplicateMailingListSignup,
+    usedLegacyReservationTable: reservationOutcome.usedLegacyTable,
   });
+}
+
+type ReservationPersistenceResult = {
+  ok: true;
+  usedLegacyTable: boolean;
+  error?: undefined;
+};
+
+type ReservationPersistenceFailure = {
+  ok: false;
+  usedLegacyTable: boolean;
+  error: { code?: string; message?: string } | null;
+};
+
+type ReservationPersistenceInput = {
+  name: string;
+  email: string;
+  partySize: number;
+  visitWindow: string | null;
+  notes: string | null;
+  source: string;
+};
+
+async function persistReservationRequest(
+  supabase: SupabaseClient,
+  data: ReservationPersistenceInput,
+): Promise<ReservationPersistenceResult | ReservationPersistenceFailure> {
+  const reservationInsert = await supabase.from("reservation_requests").insert({
+    name: data.name,
+    email: data.email,
+    party_size: data.partySize,
+    visit_window: data.visitWindow,
+    notes: data.notes,
+    source: data.source,
+  });
+
+  if (!reservationInsert.error) {
+    return { ok: true, usedLegacyTable: false };
+  }
+
+  if (reservationInsert.error.code !== "PGRST205") {
+    return { ok: false, usedLegacyTable: false, error: reservationInsert.error };
+  }
+
+  const legacyInsert = await supabase.from("reservations").insert({
+    guest_name: data.name,
+    guest_contact: data.email,
+    party_size: data.partySize,
+    occasion: data.visitWindow,
+    notes: data.notes,
+    status: "pending",
+  });
+
+  if (legacyInsert.error) {
+    return { ok: false, usedLegacyTable: true, error: legacyInsert.error };
+  }
+
+  return { ok: true, usedLegacyTable: true };
 }
 
