@@ -89,10 +89,7 @@ const futurePaths: FuturePath[] = [
   },
 ];
 
-const socialLinks = [
-  { label: "Instagram", href: "https://www.instagram.com/snowwhitelaundry" },
-  { label: "Facebook", href: "https://www.facebook.com/snowwhitelaundry" },
-];
+const socialLinks = [{ label: "Instagram", href: "https://snowwhitelaundry.co" }];
 
 const mapHref = "https://maps.google.com/?q=281%20Water%20Street%2C%20St.%20John%27s%2C%20NL";
 

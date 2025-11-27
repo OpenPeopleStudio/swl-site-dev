@@ -61,45 +61,50 @@ export async function POST(request: Request) {
 
   const supabase = getSupabaseAdmin();
 
-  const baseInsert = await supabase.from("mailing_list_signups").insert({
-    email,
-    source: `${source}_interest`,
-    metadata: {
-      name,
-      party_size: partySizeValue,
-      visit_window: visitWindow,
-      notes,
-      intent: "reservation_request",
-    },
-  });
+  const metadata = {
+    name,
+    party_size: partySizeValue,
+    visit_window: visitWindow,
+    notes,
+    intent: "reservation_request",
+  };
 
-  if (baseInsert.error && baseInsert.error.code !== "23505") {
-    console.error("Mailing list capture failed", baseInsert.error);
-    return NextResponse.json(
-      { error: "Unable to record your request right now." },
-      { status: 500 },
-    );
-  }
-
-  void supabase
-    .from("reservation_requests")
-    .insert({
+  const [reservationResult, mailingListResult] = await Promise.all([
+    supabase.from("reservation_requests").insert({
       name,
       email,
       party_size: partySizeValue,
       visit_window: visitWindow,
       notes,
       source,
-    })
-    .then(({ error }) => {
-      if (error) {
-        console.error("Reservation request table insert failed", error);
-      }
-    })
-    .catch((error) => {
-      console.error("Reservation request background insert error", error);
-    });
+    }),
+    supabase.from("mailing_list_signups").insert({
+      email,
+      source: `${source}_interest`,
+      metadata,
+    }),
+  ]);
 
-  return NextResponse.json({ ok: true, fallback: Boolean(baseInsert.error) });
+  if (reservationResult.error) {
+    console.error("Reservation request table insert failed", reservationResult.error);
+    return NextResponse.json(
+      { error: "Unable to record your request right now." },
+      { status: 500 },
+    );
+  }
+
+  const mailingListError = mailingListResult.error;
+  const duplicateMailingListSignup = mailingListError?.code === "23505";
+  const mailingListCaptured = !mailingListError || duplicateMailingListSignup;
+
+  if (mailingListError && !duplicateMailingListSignup) {
+    console.error("Mailing list capture failed (non-blocking)", mailingListError);
+  }
+
+  return NextResponse.json({
+    ok: true,
+    mailingListCaptured,
+    duplicateMailingListSignup,
+  });
 }
 
